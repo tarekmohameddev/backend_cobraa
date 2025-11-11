@@ -156,3 +156,6 @@ docker/.data
 # AI Docs folder and all its contents
 /Ai Docs/
 /Ai Docs/*
+composer.lock
+composer.json
+
