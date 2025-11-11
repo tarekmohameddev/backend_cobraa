@@ -23,3 +23,136 @@ yarn-error.log
 .github/workflows/main.yml
 rr
 .rr.yaml
+
+
+# Laravel & PHP #
+/vendor/
+/node_modules/
+.env
+.env.*
+.phpunit.result.cache
+Homestead.yaml
+Homestead.json
+/.vagrant
+/.idea
+/.phpstorm.meta.php
+/public/storage
+/storage/*.key
+/storage/debugbar
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/bootstrap/cache/*
+/bootstrap/compiled.php
+
+# Laravel specific cache and compiled files #
+/public/hot
+/public/mix-manifest.json
+/public/css/*.css.map
+/public/js/*.js.map
+
+# Composer dependencies #
+/composer.lock
+/composer.phar
+
+# NPM & Yarn #
+/package-lock.json
+/yarn.lock
+/pnpm-lock.yaml
+/.npm
+/.yarn
+/.pnp.*
+.pnp.js
+
+# Environment #
+.env.backup
+.env.local
+.env.production
+.env.staging
+.env.testing
+
+# IDE / Editor #
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files #
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+Desktop.ini
+$RECYCLE.BIN/
+
+# Logs & reports #
+*.log
+*.sql
+*.sqlite
+*.seed
+*.pid
+*.seeders
+*.bak
+*.backup
+
+# Cache & temp #
+/cache
+/.cache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+/.tmp
+*.tmp
+
+# PHPUnit #
+/coverage/
+/.phpunit.cache
+/.phpunit.result.cache
+
+# Docker #
+.docker
+docker-compose.override.yml
+docker-compose.local.yml
+*.env.docker
+docker/.data
+
+# Custom user uploads (optional – remove if needed) #
+/public/uploads/
+/public/temp/
+/storage/app/public/uploads/
+
+# Deployment / CI #
+/.env.production
+/.env.stage
+/.env.dev
+/deploy.sh
+/.github/
+.ci/
+.ci-cache/
+
+# JetBrains #
+/.idea/
+/*.iml
+
+# VS Code #
+.vscode/
+.history/
+*.code-workspace
+
+# Misc #
+*.orig
+*.swp
+*.bak
+*.tmp
+*~
+
+# Laravel Telescope & Horizon #
+/storage/telescope/
+/storage/horizon/
+
+# --- Custom Additions ---
+# AI Docs folder and all its contents
+/Ai Docs/
+/Ai Docs/*
