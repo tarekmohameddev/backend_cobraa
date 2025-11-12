@@ -14,9 +14,8 @@ class RegionSeeder extends Seeder
 {
     //Asia, Africa, North America, South America, Europe, Oceania, Americas, Polar
     private array $regionAllow = [
-        '*',
 //        'Asia',
-//        'Africa',
+         'Africa',
 //        'North America',
 //        'South America',
 //        'Europe',
@@ -26,7 +25,7 @@ class RegionSeeder extends Seeder
     ];
 
     private array $countryAllow = [
-        '*',
+        'Egypt',
 //        'Antarctica'
     ];
 
@@ -35,7 +34,7 @@ class RegionSeeder extends Seeder
     ];
 
     private array $areaAllow = [
-//        '*'
+       '*'
     ];
 
     /**
@@ -81,19 +80,19 @@ class RegionSeeder extends Seeder
 
                 $city = $this->city($region, $country, $state, $default);
 
-//                if (count($this->areaAllow) === 0) {
-//                    continue;
-//                }
-//
-//                foreach (data_get($state, 'cities', []) as $area) {
-//
-//                    if (!in_array(data_get($area, 'name'), $this->areaAllow) && !in_array('*', $this->areaAllow)) {
-//                        continue;
-//                    }
-//
-//                    $this->area($region, $country, $city, $area, $default);
-//
-//                }
+               if (count($this->areaAllow) === 0) {
+                   continue;
+               }
+
+               foreach (data_get($state, 'cities', []) as $area) {
+
+                   if (!in_array(data_get($area, 'name'), $this->areaAllow) && !in_array('*', $this->areaAllow)) {
+                       continue;
+                   }
+
+                   $this->area($region, $country, $city, $area, $default);
+
+               }
 
             }
 
