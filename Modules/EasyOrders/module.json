@@ -1,0 +1,13 @@
+{
+    "name": "EasyOrders",
+    "alias": "easyorders",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\EasyOrders\\Providers\\EasyOrdersServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}
