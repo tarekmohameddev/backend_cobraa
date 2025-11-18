@@ -7,6 +7,7 @@ namespace Modules\EasyOrders\Services;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Modules\EasyOrders\Entities\EasyOrdersTempOrder;
 use Modules\EasyOrders\Repositories\EasyOrdersStoreRepository;
@@ -59,6 +60,24 @@ class WebhookService
 			// Idempotent: return existing and ensure validation job is queued (optional)
 			return $duplicate;
 		}
+
+		// Fetch full order details from EasyOrders API instead of relying solely on webhook payload
+		$baseUrl = rtrim((string) Config::get('easyorders.base_url'), '/');
+		$orderPath = trim((string) Config::get('easyorders.order_details_path', '/external-apps/orders'), '/');
+		$url = $baseUrl . '/' . $orderPath . '/' . urlencode($externalOrderId);
+
+		$response = Http::withHeaders([
+			'Api-Key' => (string) $store->api_key,
+		])
+			->acceptJson()
+			->timeout(10)
+			->get($url);
+
+		if (!$response->successful()) {
+			abort(502, 'Failed to fetch order details from EasyOrders.');
+		}
+
+		$payload = $response->json() ?? [];
 
 		$now = CarbonImmutable::now();
 		$createdAt = Arr::get($payload, 'created_at');

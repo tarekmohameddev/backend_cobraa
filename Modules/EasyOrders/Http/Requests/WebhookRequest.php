@@ -16,10 +16,11 @@ class WebhookRequest extends FormRequest
 	public function rules(): array
 	{
 		return [
+			// Only the external order id is required; the rest will be fetched from EasyOrders API
 			'id' => ['required', 'string'],
-			'store_id' => ['required', 'string'],
-			'status' => ['required', 'string'],
-			'cart_items' => ['required', 'array'],
+			'store_id' => ['sometimes', 'nullable', 'string'],
+			'status' => ['sometimes', 'nullable', 'string'],
+			'cart_items' => ['sometimes', 'array'],
 		];
 	}
 }
