@@ -9,12 +9,12 @@
         "currency": "EGP",
         "currency_symbol": "ج.م",
         "tld": ".eg",
-        "native": "مصر‎",
+        "native": "مصر",
         "region": "Africa",
         "subregion": "Northern Africa",
         "timezones": [
             {
-                "zoneName": "Africa\/Cairo",
+                "zoneName": "Africa/Cairo",
                 "gmtOffset": 7200,
                 "gmtOffsetName": "UTC+02:00",
                 "abbreviation": "EET",
@@ -41,992 +41,2345 @@
         "emojiU": "U+1F1EA U+1F1EC",
         "states": [
             {
-                "id": 3235,
-                "name": "Alexandria Governorate",
-                "state_code": "ALX",
-                "latitude": "30.87605680",
-                "longitude": "29.74260400",
+                "id": 1,
+                "name": "اسوان",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31787,
-                        "name": "Alexandria",
-                        "latitude": "31.20176000",
-                        "longitude": "29.91582000"
+                        "id": 4,
+                        "name": "ادفو",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 377,
+                        "name": "اسوان",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 5,
+                        "name": "دراو",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 3,
+                        "name": "كوم امبو",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 6,
+                        "name": "نصر النوبة",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3225,
-                "name": "Aswan Governorate",
-                "state_code": "ASN",
-                "latitude": "23.69664980",
-                "longitude": "32.71813750",
+                "id": 2,
+                "name": "اسيوط",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31756,
-                        "name": "Abu Simbel",
-                        "latitude": "22.34570000",
-                        "longitude": "31.61624000"
+                        "id": 200,
+                        "name": "أبنوب",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31791,
-                        "name": "Aswan",
-                        "latitude": "24.09082000",
-                        "longitude": "32.89942000"
+                        "id": 198,
+                        "name": "ابو تيج",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31819,
-                        "name": "Idfū",
-                        "latitude": "24.97916000",
-                        "longitude": "32.87722000"
+                        "id": 202,
+                        "name": "البداري",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31829,
-                        "name": "Kawm Umbū",
-                        "latitude": "24.47669000",
-                        "longitude": "32.94626000"
+                        "id": 201,
+                        "name": "الغنايم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 205,
+                        "name": "الفتح",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 196,
+                        "name": "القوصية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 197,
+                        "name": "ديروط",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 203,
+                        "name": "ساحل سليم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 204,
+                        "name": "صدفا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 199,
+                        "name": "منفلوط",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3236,
-                "name": "Asyut Governorate",
-                "state_code": "AST",
-                "latitude": "27.21338310",
-                "longitude": "31.44561790",
+                "id": 3,
+                "name": "الإسكندرية",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31755,
-                        "name": "Abnūb",
-                        "latitude": "27.26960000",
-                        "longitude": "31.15105000"
+                        "id": 38,
+                        "name": "ابوقير",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31758,
-                        "name": "Abū Tīj",
-                        "latitude": "27.04411000",
-                        "longitude": "31.31897000"
+                        "id": 37,
+                        "name": "ابيس",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31764,
-                        "name": "Al Badārī",
-                        "latitude": "26.99257000",
-                        "longitude": "31.41554000"
+                        "id": 54,
+                        "name": "الازريطه",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31781,
-                        "name": "Al Qūşīyah",
-                        "latitude": "27.44020000",
-                        "longitude": "30.81841000"
+                        "id": 35,
+                        "name": "البيطاش",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31792,
-                        "name": "Asyūţ",
-                        "latitude": "27.18096000",
-                        "longitude": "31.18368000"
+                        "id": 33,
+                        "name": "الدخيلة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31807,
-                        "name": "Dayrūţ",
-                        "latitude": "27.55602000",
-                        "longitude": "30.80764000"
+                        "id": 29,
+                        "name": "الساحل الشمالي",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31836,
-                        "name": "Manfalūţ",
-                        "latitude": "27.31040000",
-                        "longitude": "30.97004000"
+                        "id": 36,
+                        "name": "السيوف",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 53,
+                        "name": "الشاطبي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 60,
+                        "name": "العامريه",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 58,
+                        "name": "العجمي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 41,
+                        "name": "العصافره",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 30,
+                        "name": "الماكس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 40,
+                        "name": "المعموره",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 374,
+                        "name": "المنتزه",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 39,
+                        "name": "المندره",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 56,
+                        "name": "المنشية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 34,
+                        "name": "الهانوفيل",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 31,
+                        "name": "الورديان",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 57,
+                        "name": "بحري",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 62,
+                        "name": "برج العرب",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 61,
+                        "name": "برج العرب الجديدة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 46,
+                        "name": "جليم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 48,
+                        "name": "رشدي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 47,
+                        "name": "سان ستيفانو",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 50,
+                        "name": "سبورتنج",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 373,
+                        "name": "سموحة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 378,
+                        "name": "سيدى بشر قبلى",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 43,
+                        "name": "سيدي بشر بحري",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 49,
+                        "name": "سيدي جابر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 52,
+                        "name": "كامب شيزار",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 51,
+                        "name": "كليوباترا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 32,
+                        "name": "كيلو 21",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 45,
+                        "name": "لوران",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 59,
+                        "name": "محرم بك",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 55,
+                        "name": "محطه الرمل",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 42,
+                        "name": "ميامي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 44,
+                        "name": "نجيب",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3241,
-                "name": "Beheira Governorate",
-                "state_code": "BH",
-                "latitude": "30.84809860",
-                "longitude": "30.34355060",
+                "id": 4,
+                "name": "الاسماعيلية",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31759,
-                        "name": "Abū al Maţāmīr",
-                        "latitude": "30.91018000",
-                        "longitude": "30.17438000"
+                        "id": 242,
+                        "name": "ابو صوير",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31760,
-                        "name": "Ad Dilinjāt",
-                        "latitude": "30.82796000",
-                        "longitude": "30.53552000"
+                        "id": 241,
+                        "name": "التل الكبير",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31804,
-                        "name": "Damanhūr",
-                        "latitude": "31.03408000",
-                        "longitude": "30.46823000"
+                        "id": 243,
+                        "name": "القصاصين",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31879,
-                        "name": "Ḩawsh ‘Īsá",
-                        "latitude": "30.91280000",
-                        "longitude": "30.29019000"
+                        "id": 239,
+                        "name": "القنطرة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31820,
-                        "name": "Idkū",
-                        "latitude": "31.30730000",
-                        "longitude": "30.29810000"
+                        "id": 240,
+                        "name": "القنطرة شرق",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31826,
-                        "name": "Kafr ad Dawwār",
-                        "latitude": "31.13379000",
-                        "longitude": "30.12969000"
-                    },
-                    {
-                        "id": 31830,
-                        "name": "Kawm Ḩamādah",
-                        "latitude": "30.76128000",
-                        "longitude": "30.69972000"
-                    },
-                    {
-                        "id": 31857,
-                        "name": "Rosetta",
-                        "latitude": "31.39951000",
-                        "longitude": "30.41718000"
+                        "id": 238,
+                        "name": "فايد",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3230,
-                "name": "Beni Suef Governorate",
-                "state_code": "BNS",
-                "latitude": "28.89388370",
-                "longitude": "31.44561790",
+                "id": 5,
+                "name": "الاقصر",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31768,
-                        "name": "Al Fashn",
-                        "latitude": "28.82431000",
-                        "longitude": "30.89948000"
+                        "id": 184,
+                        "name": "اسنا",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31798,
-                        "name": "Banī Suwayf",
-                        "latitude": "29.07441000",
-                        "longitude": "31.09785000"
+                        "id": 182,
+                        "name": "البياضية",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31801,
-                        "name": "Būsh",
-                        "latitude": "29.14816000",
-                        "longitude": "31.12733000"
+                        "id": 181,
+                        "name": "الزينية",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31869,
-                        "name": "Sumusţā as Sulţānī",
-                        "latitude": "28.91667000",
-                        "longitude": "30.85000000"
+                        "id": 183,
+                        "name": "الطود",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 180,
+                        "name": "القرنة",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3223,
-                "name": "Cairo Governorate",
-                "state_code": "C",
-                "latitude": "29.95375640",
-                "longitude": "31.53700030",
+                "id": 6,
+                "name": "البحر الاحمر",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31802,
-                        "name": "Cairo",
-                        "latitude": "30.06263000",
-                        "longitude": "31.24967000"
+                        "id": 133,
+                        "name": "الجونة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31878,
-                        "name": "Ḩalwān",
-                        "latitude": "29.84144000",
-                        "longitude": "31.30084000"
+                        "id": 128,
+                        "name": "الغردقة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31848,
-                        "name": "New Cairo",
-                        "latitude": "30.03000000",
-                        "longitude": "31.47000000"
+                        "id": 132,
+                        "name": "القصير",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 134,
+                        "name": "حلايب و شلاتين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 130,
+                        "name": "راس غارب",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 131,
+                        "name": "سفاجا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 129,
+                        "name": "مرسي علم",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3245,
-                "name": "Dakahlia Governorate",
-                "state_code": "DK",
-                "latitude": "31.16560440",
-                "longitude": "31.49131820",
+                "id": 7,
+                "name": "البحيرة",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31880,
-                        "name": "‘Izbat al Burj",
-                        "latitude": "31.50840000",
-                        "longitude": "31.84106000"
+                        "id": 66,
+                        "name": "أبو المطامير",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31762,
-                        "name": "Ajā",
-                        "latitude": "30.94162000",
-                        "longitude": "31.29039000"
+                        "id": 65,
+                        "name": "أبو حمص",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31770,
-                        "name": "Al Jammālīyah",
-                        "latitude": "31.18065000",
-                        "longitude": "31.86497000"
+                        "id": 67,
+                        "name": "ادكو",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31775,
-                        "name": "Al Manşūrah",
-                        "latitude": "31.03637000",
-                        "longitude": "31.38069000"
+                        "id": 70,
+                        "name": "الدلنجات",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31774,
-                        "name": "Al Manzalah",
-                        "latitude": "31.15823000",
-                        "longitude": "31.93600000"
+                        "id": 76,
+                        "name": "الرحمانية",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31776,
-                        "name": "Al Maţarīyah",
-                        "latitude": "31.18287000",
-                        "longitude": "32.03108000"
+                        "id": 69,
+                        "name": "المحمودية",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31800,
-                        "name": "Bilqās",
-                        "latitude": "31.21452000",
-                        "longitude": "31.35798000"
+                        "id": 77,
+                        "name": "النوبارية",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31808,
-                        "name": "Dikirnis",
-                        "latitude": "31.08898000",
-                        "longitude": "31.59478000"
+                        "id": 71,
+                        "name": "ايتاى البارود",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31844,
-                        "name": "Minyat an Naşr",
-                        "latitude": "31.12624000",
-                        "longitude": "31.64313000"
+                        "id": 73,
+                        "name": "حوش عيسى",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31865,
-                        "name": "Shirbīn",
-                        "latitude": "31.19688000",
-                        "longitude": "31.52430000"
+                        "id": 68,
+                        "name": "دمنهور",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31876,
-                        "name": "Ţalkhā",
-                        "latitude": "31.05390000",
-                        "longitude": "31.37787000"
+                        "id": 75,
+                        "name": "رشيد",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 74,
+                        "name": "شبراخيت",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 64,
+                        "name": "كفر الدوار",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 72,
+                        "name": "كوم حمادة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 78,
+                        "name": "وادي النطرون",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3224,
-                "name": "Damietta Governorate",
-                "state_code": "DT",
-                "latitude": "31.36257990",
-                "longitude": "31.67393710",
+                "id": 8,
+                "name": "الجيزة",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31794,
-                        "name": "Az Zarqā",
-                        "latitude": "31.20864000",
-                        "longitude": "31.63528000"
+                        "id": 290,
+                        "name": "6 اكتوبر",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31805,
-                        "name": "Damietta",
-                        "latitude": "31.41648000",
-                        "longitude": "31.81332000"
+                        "id": 263,
+                        "name": "أطفيح",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31815,
-                        "name": "Fāraskūr",
-                        "latitude": "31.32977000",
-                        "longitude": "31.71507000"
+                        "id": 281,
+                        "name": "ابو النمرس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 256,
+                        "name": "ابو رواش",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 258,
+                        "name": "ارض اللواء",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 255,
+                        "name": "اطفيح",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 253,
+                        "name": "البدرشين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 269,
+                        "name": "البراجيل",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 365,
+                        "name": "الجيزة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 291,
+                        "name": "الحوامدية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 279,
+                        "name": "الدقي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 271,
+                        "name": "الزمالك",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 289,
+                        "name": "الشيخ زايد",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 280,
+                        "name": "الصف",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 275,
+                        "name": "العجوزة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 282,
+                        "name": "العمرانية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 266,
+                        "name": "العياط",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 287,
+                        "name": "القرية الذكية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 274,
+                        "name": "الكيت كات",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 286,
+                        "name": "المنصورية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 283,
+                        "name": "المنيب",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 284,
+                        "name": "المنيل",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 276,
+                        "name": "المهندسين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 370,
+                        "name": "الهرم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 254,
+                        "name": "الواحات البحرية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 264,
+                        "name": "الوراق",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 272,
+                        "name": "امبابة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 251,
+                        "name": "اوسيم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 267,
+                        "name": "برقاش",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 265,
+                        "name": "بشتيل",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 278,
+                        "name": "بولاق الدكرور",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 375,
+                        "name": "حدائق الاهرام",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 261,
+                        "name": "دهشور",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 260,
+                        "name": "سقارة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 259,
+                        "name": "شبرامنت",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 262,
+                        "name": "صفط اللبن",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 270,
+                        "name": "عبود",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 285,
+                        "name": "فيصل",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 288,
+                        "name": "كرداسة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 292,
+                        "name": "كفر غطاطي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 277,
+                        "name": "منشأة القناطر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 252,
+                        "name": "منشية البكاري",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 257,
+                        "name": "منيل شيحه",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 273,
+                        "name": "ميت عقبة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 268,
+                        "name": "وردان",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3238,
-                "name": "Faiyum Governorate",
-                "state_code": "FYM",
-                "latitude": "29.30840210",
-                "longitude": "30.84284970",
+                "id": 9,
+                "name": "الدقهلية",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31769,
-                        "name": "Al Fayyūm",
-                        "latitude": "29.30995000",
-                        "longitude": "30.84180000"
+                        "id": 83,
+                        "name": "اجا",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31782,
-                        "name": "Al Wāsiţah",
-                        "latitude": "29.33778000",
-                        "longitude": "31.20556000"
+                        "id": 92,
+                        "name": "الجمالية",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31818,
-                        "name": "Ibshawāy",
-                        "latitude": "29.35896000",
-                        "longitude": "30.68061000"
+                        "id": 89,
+                        "name": "السنبلاوين",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31823,
-                        "name": "Iţsā",
-                        "latitude": "29.23760000",
-                        "longitude": "30.78944000"
+                        "id": 86,
+                        "name": "المنزلة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31877,
-                        "name": "Ţāmiyah",
-                        "latitude": "29.47639000",
-                        "longitude": "30.96119000"
+                        "id": 80,
+                        "name": "المنصورة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 95,
+                        "name": "بلقاس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 96,
+                        "name": "بني عبيد",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 94,
+                        "name": "جمصة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 84,
+                        "name": "دكرنس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 87,
+                        "name": "سندوب",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 93,
+                        "name": "شربين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 85,
+                        "name": "طلخا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 91,
+                        "name": "مركز المطرية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 88,
+                        "name": "منية النصر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 97,
+                        "name": "ميت سلسبيل",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 81,
+                        "name": "ميت غمر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 82,
+                        "name": "نبروه",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 90,
+                        "name": "نمى الامديد",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3234,
-                "name": "Gharbia Governorate",
-                "state_code": "GH",
-                "latitude": "30.87535560",
-                "longitude": "31.03351000",
+                "id": 10,
+                "name": "السويس",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31777,
-                        "name": "Al Maḩallah al Kubrá",
-                        "latitude": "30.97063000",
-                        "longitude": "31.16690000"
+                        "id": 220,
+                        "name": "الأربعين",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31799,
-                        "name": "Basyūn",
-                        "latitude": "30.93976000",
-                        "longitude": "30.81338000"
+                        "id": 219,
+                        "name": "الجناين",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31828,
-                        "name": "Kafr az Zayyāt",
-                        "latitude": "30.82480000",
-                        "longitude": "30.81805000"
+                        "id": 367,
+                        "name": "السويس",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31855,
-                        "name": "Quţūr",
-                        "latitude": "30.97225000",
-                        "longitude": "30.95614000"
-                    },
-                    {
-                        "id": 31860,
-                        "name": "Samannūd",
-                        "latitude": "30.96160000",
-                        "longitude": "31.24069000"
-                    },
-                    {
-                        "id": 31872,
-                        "name": "Tanda",
-                        "latitude": "30.78847000",
-                        "longitude": "31.00192000"
-                    },
-                    {
-                        "id": 31874,
-                        "name": "Zefta",
-                        "latitude": "30.71420000",
-                        "longitude": "31.24425000"
+                        "id": 221,
+                        "name": "عتاقه",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3239,
-                "name": "Giza Governorate",
-                "state_code": "GZ",
-                "latitude": "28.76662160",
-                "longitude": "29.23207840",
+                "id": 11,
+                "name": "الشرقية",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31786,
-                        "name": "Al ‘Ayyāţ",
-                        "latitude": "29.61972000",
-                        "longitude": "31.25750000"
+                        "id": 111,
+                        "name": "أبو حماد",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31766,
-                        "name": "Al Bawīţī",
-                        "latitude": "28.34919000",
-                        "longitude": "28.86591000"
+                        "id": 110,
+                        "name": "ابو كبير",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31783,
-                        "name": "Al Ḩawāmidīyah",
-                        "latitude": "29.90000000",
-                        "longitude": "31.25000000"
+                        "id": 117,
+                        "name": "الابراهيميه",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31795,
-                        "name": "Aş Şaff",
-                        "latitude": "29.56472000",
-                        "longitude": "31.28111000"
+                        "id": 113,
+                        "name": "الحسينية",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31793,
-                        "name": "Awsīm",
-                        "latitude": "30.12303000",
-                        "longitude": "31.13571000"
+                        "id": 120,
+                        "name": "الزقازيق",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31816,
-                        "name": "Giza",
-                        "latitude": "30.00808000",
-                        "longitude": "31.21093000"
+                        "id": 116,
+                        "name": "الصالحية",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31833,
-                        "name": "Madīnat Sittah Uktūbar",
-                        "latitude": "29.81667000",
-                        "longitude": "31.05000000"
+                        "id": 122,
+                        "name": "العاشر من رمضان",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 125,
+                        "name": "القرين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 126,
+                        "name": "القنايات",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 124,
+                        "name": "اولاد صقر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 121,
+                        "name": "بلبيس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 119,
+                        "name": "ديرب نجم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 112,
+                        "name": "فاقوس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 118,
+                        "name": "كفر صقر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 115,
+                        "name": "مشتول السوق",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 114,
+                        "name": "منيا القمح",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 123,
+                        "name": "ههيا",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3244,
-                "name": "Ismailia Governorate",
-                "state_code": "IS",
-                "latitude": "30.58309340",
-                "longitude": "32.26538870",
+                "id": 12,
+                "name": "الغربية",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31821,
-                        "name": "Ismailia",
-                        "latitude": "30.60427000",
-                        "longitude": "32.27225000"
+                        "id": 149,
+                        "name": "السنطة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 146,
+                        "name": "المحلة الكبرى",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 153,
+                        "name": "بسيون",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 152,
+                        "name": "زفتى",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 151,
+                        "name": "سمنود",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 147,
+                        "name": "طنطا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 150,
+                        "name": "قطور",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 148,
+                        "name": "كفر الزيات",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3222,
-                "name": "Kafr el-Sheikh Governorate",
-                "state_code": "KFS",
-                "latitude": "31.30854440",
-                "longitude": "30.80394740",
+                "id": 13,
+                "name": "الفيوم",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31784,
-                        "name": "Al Ḩāmūl",
-                        "latitude": "31.31146000",
-                        "longitude": "31.14766000"
+                        "id": 214,
+                        "name": "ابشوي",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31810,
-                        "name": "Disūq",
-                        "latitude": "31.13259000",
-                        "longitude": "30.64784000"
+                        "id": 217,
+                        "name": "اطسا",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31814,
-                        "name": "Fuwwah",
-                        "latitude": "31.20365000",
-                        "longitude": "30.54908000"
+                        "id": 215,
+                        "name": "سنورس",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31827,
-                        "name": "Kafr ash Shaykh",
-                        "latitude": "31.11174000",
-                        "longitude": "30.93991000"
-                    },
-                    {
-                        "id": 31837,
-                        "name": "Markaz Disūq",
-                        "latitude": "31.14590000",
-                        "longitude": "30.71609000"
-                    },
-                    {
-                        "id": 31845,
-                        "name": "Munshāt ‘Alī Āghā",
-                        "latitude": "31.15791000",
-                        "longitude": "30.70177000"
-                    },
-                    {
-                        "id": 31870,
-                        "name": "Sīdī Sālim",
-                        "latitude": "31.27133000",
-                        "longitude": "30.78617000"
+                        "id": 216,
+                        "name": "طامية",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3242,
-                "name": "Luxor Governorate",
-                "state_code": "LX",
-                "latitude": "25.39444440",
-                "longitude": "32.49200880",
+                "id": 14,
+                "name": "القاهرة",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31832,
-                        "name": "Luxor",
-                        "latitude": "25.69893000",
-                        "longitude": "32.64210000"
+                        "id": 320,
+                        "name": "15 مايو",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31840,
-                        "name": "Markaz al Uqşur",
-                        "latitude": "25.62986000",
-                        "longitude": "32.59017000"
+                        "id": 350,
+                        "name": "الازبكية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 338,
+                        "name": "البساتين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 294,
+                        "name": "التبين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 310,
+                        "name": "التجمع الاول",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 348,
+                        "name": "التجمع الثالث",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 347,
+                        "name": "التجمع الخامس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 301,
+                        "name": "الحسين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 337,
+                        "name": "الدرب الاحمر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 326,
+                        "name": "الدمرداش",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 345,
+                        "name": "الرحاب",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 300,
+                        "name": "الزاوية الحمراء",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 334,
+                        "name": "السيدة زينب",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 333,
+                        "name": "السيدة عائشة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 332,
+                        "name": "السيدة نفيسة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 325,
+                        "name": "الشرابية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 295,
+                        "name": "الظاهر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 331,
+                        "name": "العباسية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 376,
+                        "name": "العتبة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 336,
+                        "name": "الفسطاط",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 352,
+                        "name": "القاهرة الجديدة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 335,
+                        "name": "القطامية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 371,
+                        "name": "القلعة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 316,
+                        "name": "المرج",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 351,
+                        "name": "المسكي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 344,
+                        "name": "المعادى",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 342,
+                        "name": "المعصرة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 339,
+                        "name": "المقطم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 329,
+                        "name": "النزهة الجديدة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 297,
+                        "name": "النهضة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 324,
+                        "name": "الويلي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 328,
+                        "name": "باب الشعرية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 298,
+                        "name": "بولاق ابو العلا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 322,
+                        "name": "جاردن سيتي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 311,
+                        "name": "جسر السويس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 317,
+                        "name": "حدائق الزيتون",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 312,
+                        "name": "حدائق القبة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 304,
+                        "name": "حلوان",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 318,
+                        "name": "حمامات القبة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 340,
+                        "name": "دار السلام",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 369,
+                        "name": "رمسيس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 306,
+                        "name": "روض الفرج",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 305,
+                        "name": "شبرا مصر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 349,
+                        "name": "عابدين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 296,
+                        "name": "عرابي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 327,
+                        "name": "عزبة النخل",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 321,
+                        "name": "عين الصيرة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 315,
+                        "name": "عين شمس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 314,
+                        "name": "غمرة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 302,
+                        "name": "كوبري القبه",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 308,
+                        "name": "مؤسسة الزكاة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 309,
+                        "name": "مدينة السلام",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 346,
+                        "name": "مدينة الشروق",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 319,
+                        "name": "مدينة نصر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 341,
+                        "name": "مدينتي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 303,
+                        "name": "مدينه المستقبل",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 299,
+                        "name": "مدينه بدر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 330,
+                        "name": "مصر الجديدة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 343,
+                        "name": "مصر القديمة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 313,
+                        "name": "منشية الصدر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 323,
+                        "name": "منشية ناصر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 307,
+                        "name": "وسط البلد",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3231,
-                "name": "Matrouh Governorate",
-                "state_code": "MT",
-                "latitude": "29.56963500",
-                "longitude": "26.41938900",
+                "id": 15,
+                "name": "القليوبية",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31785,
-                        "name": "Al ‘Alamayn",
-                        "latitude": "30.83007000",
-                        "longitude": "28.95502000"
+                        "id": 372,
+                        "name": "ابو زعبل",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31843,
-                        "name": "Mersa Matruh",
-                        "latitude": "31.35290000",
-                        "longitude": "27.23725000"
+                        "id": 358,
+                        "name": "الخانكة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31866,
-                        "name": "Siwa Oasis",
-                        "latitude": "29.20320000",
-                        "longitude": "25.51965000"
+                        "id": 363,
+                        "name": "الخصوص",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 357,
+                        "name": "العبور",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 360,
+                        "name": "القناطر الخيرية",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 355,
+                        "name": "بنها",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 354,
+                        "name": "شبرا الخيمة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 362,
+                        "name": "شبين القناطر",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 361,
+                        "name": "طوخ",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 356,
+                        "name": "قليوب",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 364,
+                        "name": "قها",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 359,
+                        "name": "كفر شكر",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3243,
-                "name": "Minya Governorate",
-                "state_code": "MN",
-                "latitude": "28.28472900",
-                "longitude": "30.52790960",
+                "id": 16,
+                "name": "المنوفية",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31757,
-                        "name": "Abū Qurqāş",
-                        "latitude": "27.93120000",
-                        "longitude": "30.83841000"
+                        "id": 101,
+                        "name": "اشمون",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31778,
-                        "name": "Al Minyā",
-                        "latitude": "28.10988000",
-                        "longitude": "30.75030000"
+                        "id": 105,
+                        "name": "الباجور",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31797,
-                        "name": "Banī Mazār",
-                        "latitude": "28.50360000",
-                        "longitude": "30.80040000"
+                        "id": 104,
+                        "name": "السادات",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31806,
-                        "name": "Dayr Mawās",
-                        "latitude": "27.64176000",
-                        "longitude": "30.84662000"
+                        "id": 106,
+                        "name": "الشهداء",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31835,
-                        "name": "Mallawī",
-                        "latitude": "27.73140000",
-                        "longitude": "30.84165000"
+                        "id": 108,
+                        "name": "بركة السبع",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31842,
-                        "name": "Maţāy",
-                        "latitude": "28.41899000",
-                        "longitude": "30.77924000"
+                        "id": 107,
+                        "name": "تلا",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31861,
-                        "name": "Samālūţ",
-                        "latitude": "28.31214000",
-                        "longitude": "30.71007000"
+                        "id": 103,
+                        "name": "سرس الليان",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 99,
+                        "name": "شبين الكوم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 100,
+                        "name": "قويسنا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 102,
+                        "name": "منوف",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3228,
-                "name": "Monufia Governorate",
-                "state_code": "MNF",
-                "latitude": "30.59724550",
-                "longitude": "30.98763210",
+                "id": 17,
+                "name": "المنيا",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31767,
-                        "name": "Al Bājūr",
-                        "latitude": "30.43046000",
-                        "longitude": "31.03679000"
+                        "id": 191,
+                        "name": "ابو قرقاص",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31789,
-                        "name": "Ash Shuhadā’",
-                        "latitude": "30.59683000",
-                        "longitude": "30.89931000"
+                        "id": 192,
+                        "name": "العدوة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31790,
-                        "name": "Ashmūn",
-                        "latitude": "30.29735000",
-                        "longitude": "30.97641000"
+                        "id": 194,
+                        "name": "المنيا الجديدة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31846,
-                        "name": "Munūf",
-                        "latitude": "30.46597000",
-                        "longitude": "30.93199000"
+                        "id": 188,
+                        "name": "بني مزار",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31854,
-                        "name": "Quwaysinā",
-                        "latitude": "30.56482000",
-                        "longitude": "31.15777000"
+                        "id": 190,
+                        "name": "دير مواس",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31863,
-                        "name": "Shibīn al Kawm",
-                        "latitude": "30.55258000",
-                        "longitude": "31.00904000"
+                        "id": 187,
+                        "name": "سمالوط",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31871,
-                        "name": "Talā",
-                        "latitude": "30.67980000",
-                        "longitude": "30.94364000"
+                        "id": 186,
+                        "name": "مطاي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 193,
+                        "name": "مغاغة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 189,
+                        "name": "ملوي",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3246,
-                "name": "New Valley Governorate",
-                "state_code": "WAD",
-                "latitude": "24.54556380",
-                "longitude": "27.17353160",
+                "id": 18,
+                "name": "الوادى الجديد",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31772,
-                        "name": "Al Khārijah",
-                        "latitude": "25.45141000",
-                        "longitude": "30.54635000"
+                        "id": 247,
+                        "name": "الخارجة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31852,
-                        "name": "Qaşr al Farāfirah",
-                        "latitude": "27.05680000",
-                        "longitude": "27.96979000"
+                        "id": 248,
+                        "name": "الداخلة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 249,
+                        "name": "الفرافرة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 245,
+                        "name": "باريس",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 246,
+                        "name": "بلاط",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3227,
-                "name": "North Sinai Governorate",
-                "state_code": "SIN",
-                "latitude": "30.28236500",
-                "longitude": "33.61757700",
+                "id": 19,
+                "name": "بنى سويف",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31788,
-                        "name": "Arish",
-                        "latitude": "31.13159000",
-                        "longitude": "33.79844000"
+                        "id": 208,
+                        "name": "الفشن",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 209,
+                        "name": "الواسطى",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 210,
+                        "name": "اهنسيا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 211,
+                        "name": "ببا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 207,
+                        "name": "سمسطا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 212,
+                        "name": "ناصر",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3229,
-                "name": "Port Said Governorate",
-                "state_code": "PTS",
-                "latitude": "31.07586060",
-                "longitude": "32.26538870",
+                "id": 20,
+                "name": "بورسعيد",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31850,
-                        "name": "Port Said",
-                        "latitude": "31.25654000",
-                        "longitude": "32.28411000"
+                        "id": 226,
+                        "name": "الزهور",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 224,
+                        "name": "الضواحي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 227,
+                        "name": "العرب",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 225,
+                        "name": "المناخ",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 223,
+                        "name": "بور فؤاد",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 366,
+                        "name": "بورسعيد",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 229,
+                        "name": "حي الجنوب",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 228,
+                        "name": "حي الشرق",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3232,
-                "name": "Qalyubia Governorate",
-                "state_code": "KB",
-                "latitude": "30.32923680",
-                "longitude": "31.21684660",
+                "id": 21,
+                "name": "جنوب سيناء",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31771,
-                        "name": "Al Khānkah",
-                        "latitude": "30.21035000",
-                        "longitude": "31.36812000"
+                        "id": 162,
+                        "name": "ابو رديس",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31779,
-                        "name": "Al Qanāţir al Khayrīyah",
-                        "latitude": "30.19327000",
-                        "longitude": "31.13703000"
+                        "id": 163,
+                        "name": "ابو زنيمة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31796,
-                        "name": "Banhā",
-                        "latitude": "30.45977000",
-                        "longitude": "31.18420000"
+                        "id": 165,
+                        "name": "دهب",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31851,
-                        "name": "Qalyūb",
-                        "latitude": "30.17922000",
-                        "longitude": "31.20560000"
+                        "id": 166,
+                        "name": "رأس صدر",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31864,
-                        "name": "Shibīn al Qanāṭir",
-                        "latitude": "30.31269000",
-                        "longitude": "31.32018000"
+                        "id": 168,
+                        "name": "سانت كاترين",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31873,
-                        "name": "Toukh",
-                        "latitude": "30.35487000",
-                        "longitude": "31.20105000"
+                        "id": 167,
+                        "name": "شرم الشيخ",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 169,
+                        "name": "طور سيناء",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 164,
+                        "name": "نويبع",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3247,
-                "name": "Qena Governorate",
-                "state_code": "KN",
-                "latitude": "26.23460330",
-                "longitude": "32.98883190",
+                "id": 22,
+                "name": "دمياط",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31809,
-                        "name": "Dishnā",
-                        "latitude": "26.12467000",
-                        "longitude": "32.47598000"
+                        "id": 232,
+                        "name": "الزرقاء",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31813,
-                        "name": "Farshūţ",
-                        "latitude": "26.05494000",
-                        "longitude": "32.16329000"
+                        "id": 368,
+                        "name": "دمياط",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31822,
-                        "name": "Isnā",
-                        "latitude": "25.29336000",
-                        "longitude": "32.55402000"
+                        "id": 233,
+                        "name": "دمياط الجديدة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31831,
-                        "name": "Kousa",
-                        "latitude": "25.91407000",
-                        "longitude": "32.76362000"
+                        "id": 235,
+                        "name": "راس البر",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31847,
-                        "name": "Naja' Ḥammādī",
-                        "latitude": "26.04949000",
-                        "longitude": "32.24142000"
+                        "id": 231,
+                        "name": "فارسكور",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31853,
-                        "name": "Qinā",
-                        "latitude": "26.16418000",
-                        "longitude": "32.72671000"
+                        "id": 234,
+                        "name": "كفر البطيخ",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 236,
+                        "name": "كفر سعد",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3240,
-                "name": "Red Sea Governorate",
-                "state_code": "BA",
-                "latitude": "24.68263160",
-                "longitude": "34.15319470",
+                "id": 23,
+                "name": "سوهاج",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31780,
-                        "name": "Al Quşayr",
-                        "latitude": "26.10426000",
-                        "longitude": "34.27793000"
+                        "id": 18,
+                        "name": "اخميم",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31811,
-                        "name": "El Gouna",
-                        "latitude": "27.39417000",
-                        "longitude": "33.67825000"
+                        "id": 22,
+                        "name": "البلينه",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31817,
-                        "name": "Hurghada",
-                        "latitude": "27.25738000",
-                        "longitude": "33.81291000"
+                        "id": 24,
+                        "name": "المراغه",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31834,
-                        "name": "Makadi Bay",
-                        "latitude": "26.99123000",
-                        "longitude": "33.89952000"
+                        "id": 19,
+                        "name": "المنشأة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31841,
-                        "name": "Marsa Alam",
-                        "latitude": "25.06305000",
-                        "longitude": "34.89005000"
+                        "id": 21,
+                        "name": "جرجا",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31856,
-                        "name": "Ras Gharib",
-                        "latitude": "28.35831000",
-                        "longitude": "33.07829000"
+                        "id": 25,
+                        "name": "جهينه",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31858,
-                        "name": "Safaga",
-                        "latitude": "26.74906000",
-                        "longitude": "33.93891000"
+                        "id": 27,
+                        "name": "ساقلتا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 26,
+                        "name": "طما",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 23,
+                        "name": "طهطا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 20,
+                        "name": "مركز دار السلام",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3226,
-                "name": "Sohag Governorate",
-                "state_code": "SHG",
-                "latitude": "26.69383400",
-                "longitude": "32.17460500",
+                "id": 24,
+                "name": "شمال سيناء",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31763,
-                        "name": "Akhmīm",
-                        "latitude": "26.56217000",
-                        "longitude": "31.74503000"
+                        "id": 157,
+                        "name": "الحسنة",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31765,
-                        "name": "Al Balyanā",
-                        "latitude": "26.23568000",
-                        "longitude": "32.00347000"
+                        "id": 159,
+                        "name": "الشيخ زويد",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31773,
-                        "name": "Al Manshāh",
-                        "latitude": "26.47686000",
-                        "longitude": "31.80350000"
+                        "id": 158,
+                        "name": "العريش",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31824,
-                        "name": "Jirjā",
-                        "latitude": "26.33826000",
-                        "longitude": "31.89161000"
+                        "id": 155,
+                        "name": "بئر العبد",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31825,
-                        "name": "Juhaynah",
-                        "latitude": "26.67319000",
-                        "longitude": "31.49760000"
+                        "id": 160,
+                        "name": "رفح",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31838,
-                        "name": "Markaz Jirjā",
-                        "latitude": "26.30683000",
-                        "longitude": "31.84574000"
-                    },
-                    {
-                        "id": 31839,
-                        "name": "Markaz Sūhāj",
-                        "latitude": "26.53948000",
-                        "longitude": "31.67524000"
-                    },
-                    {
-                        "id": 31867,
-                        "name": "Sohag",
-                        "latitude": "26.55695000",
-                        "longitude": "31.69478000"
-                    },
-                    {
-                        "id": 31875,
-                        "name": "Ţahţā",
-                        "latitude": "26.76930000",
-                        "longitude": "31.50214000"
+                        "id": 156,
+                        "name": "نخل",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3237,
-                "name": "South Sinai Governorate",
-                "state_code": "JS",
-                "latitude": "29.31018280",
-                "longitude": "34.15319470",
+                "id": 25,
+                "name": "قنا",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31803,
-                        "name": "Dahab",
-                        "latitude": "28.48208000",
-                        "longitude": "34.49505000"
+                        "id": 12,
+                        "name": "ابو تشت",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31812,
-                        "name": "El-Tor",
-                        "latitude": "28.24168000",
-                        "longitude": "33.62220000"
+                        "id": 15,
+                        "name": "ارمنت",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31849,
-                        "name": "Nuwaybi‘a",
-                        "latitude": "29.04681000",
-                        "longitude": "34.66340000"
+                        "id": 16,
+                        "name": "دشنا",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31859,
-                        "name": "Saint Catherine",
-                        "latitude": "28.56191000",
-                        "longitude": "33.94934000"
+                        "id": 11,
+                        "name": "فرشوط",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31862,
-                        "name": "Sharm el-Sheikh",
-                        "latitude": "27.91582000",
-                        "longitude": "34.32995000"
+                        "id": 14,
+                        "name": "قفط",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 9,
+                        "name": "قنا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 13,
+                        "name": "قوص",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 8,
+                        "name": "نجع حمادي",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 10,
+                        "name": "نقادة",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             },
             {
-                "id": 3233,
-                "name": "Suez Governorate",
-                "state_code": "SUZ",
-                "latitude": "29.36822550",
-                "longitude": "32.17460500",
+                "id": 26,
+                "name": "كفر الشيخ",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
                 "cities": [
                     {
-                        "id": 31761,
-                        "name": "Ain Sukhna",
-                        "latitude": "29.60018000",
-                        "longitude": "32.31671000"
+                        "id": 142,
+                        "name": "الحامول",
+                        "latitude": null,
+                        "longitude": null
                     },
                     {
-                        "id": 31868,
-                        "name": "Suez",
-                        "latitude": "29.97371000",
-                        "longitude": "32.52627000"
+                        "id": 136,
+                        "name": "الرياض",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 143,
+                        "name": "بلطيم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 141,
+                        "name": "بيلا",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 137,
+                        "name": "دسوق",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 144,
+                        "name": "سيدي سالم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 139,
+                        "name": "فوة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 140,
+                        "name": "قلين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 138,
+                        "name": "مطوبس",
+                        "latitude": null,
+                        "longitude": null
+                    }
+                ]
+            },
+            {
+                "id": 27,
+                "name": "مطروح",
+                "state_code": "",
+                "latitude": null,
+                "longitude": null,
+                "cities": [
+                    {
+                        "id": 175,
+                        "name": "الحمام",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 172,
+                        "name": "السلوم",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 173,
+                        "name": "الضبعة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 174,
+                        "name": "العلمين",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 178,
+                        "name": "النجيلة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 177,
+                        "name": "سيدي براني",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 176,
+                        "name": "سيوة",
+                        "latitude": null,
+                        "longitude": null
+                    },
+                    {
+                        "id": 171,
+                        "name": "مرسى مطروح",
+                        "latitude": null,
+                        "longitude": null
                     }
                 ]
             }

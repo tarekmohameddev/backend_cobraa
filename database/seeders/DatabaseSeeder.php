@@ -32,7 +32,8 @@ class DatabaseSeeder extends Seeder
         $this->call(SmsGatewaySeeder::class);
         $this->call(UnitSeeder::class);
         $this->call(UserSeeder::class);
-//        $this->call(RegionSeeder::class);
+        $this->call(RegionSeeder::class);
+        $this->call(OrderSeeder::class);
 
 //        if (app()->environment() == 'local') {
 //            Category::factory()->hasTranslations(1)->count(10)->create();
