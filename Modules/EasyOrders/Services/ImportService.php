@@ -6,10 +6,12 @@ namespace Modules\EasyOrders\Services;
 
 use Illuminate\Support\Facades\DB;
 use Modules\EasyOrders\Entities\EasyOrdersTempOrder;
+use App\Models\Transaction;
 use App\Services\OrderService\OrderService;
 use App\Models\Stock;
 use App\Models\User;
 use App\Models\Order as OrderModel;
+use App\Services\TransactionService\TransactionService;
 
 class ImportService
 {
@@ -28,8 +30,10 @@ class ImportService
 		}
 
 		DB::transaction(function () use ($temp) {
-			$normalized = $temp->normalized ?? [];
-			$items = (array) ($normalized['items'] ?? []);
+			$normalized      = $temp->normalized ?? [];
+			$items           = (array) ($normalized['items'] ?? []);
+			$paymentMethod   = (string) ($temp->payment_method ?? data_get($normalized, 'payment_method', ''));
+			$externalStatus  = (string) data_get($temp->payload ?? [], 'status', data_get($normalized, 'status', ''));
 
 			// Ensure customer exists
 			$customerName = $temp->customer_name ?: data_get($normalized, 'customer.full_name');
@@ -138,7 +142,67 @@ class ImportService
 						}
 					}
 				}
-				$firstOrderId = is_array($orders) && isset($orders[0]) ? (int) data_get($orders[0], 'id') : null;
+
+				// Normalize to actual Order models after potential updates
+				$orderModels = [];
+				foreach ($orders as $order) {
+					if (is_object($order) && $order instanceof OrderModel) {
+						$orderModels[] = $order->fresh();
+					} elseif (is_array($order) && isset($order['id'])) {
+						$found = OrderModel::find((int) $order['id']);
+						if ($found) {
+							$orderModels[] = $found;
+						}
+					}
+				}
+
+				// Determine transaction status based on EasyOrders payment method & status
+				$txStatus = Transaction::STATUS_PROGRESS;
+				$paymentMethodLower = strtolower($paymentMethod);
+
+				if ($paymentMethodLower === 'cod' || $paymentMethodLower === 'cash_on_delivery') {
+					$txStatus = Transaction::STATUS_PROGRESS;
+				} else {
+					if ($externalStatus === 'paid') {
+						$txStatus = Transaction::STATUS_PAID;
+					} elseif ($externalStatus === 'paid_failed') {
+						$txStatus = Transaction::STATUS_PROGRESS;
+					}
+				}
+
+				$addFailedPaymentNote = $externalStatus === 'paid_failed' && $paymentMethodLower !== 'cod' && $paymentMethodLower !== 'cash_on_delivery';
+
+				// Create transactions for each imported order
+				foreach ($orderModels as $orderModel) {
+					/** @var OrderModel $orderModel */
+					$transaction = $orderModel->createTransaction([
+						'price'              => $orderModel->total_price,
+						'user_id'            => $orderModel->user_id,
+						// We intentionally keep payment_sys_id null here; EasyOrders is an external source
+						'payment_sys_id'     => null,
+						'payment_trx_id'     => (string) $temp->external_order_id,
+						'note'               => "EasyOrders order #{$temp->external_order_id}",
+						'perform_time'       => now(),
+						'status'             => $txStatus,
+						'status_description' => "EasyOrders order #{$temp->external_order_id}",
+					]);
+
+					// If fully paid online, mirror normal flow & unlock digital files
+					if ($txStatus === Transaction::STATUS_PAID) {
+						(new TransactionService)->digitalFile($orderModel);
+					}
+
+					// For failed online payments, keep status in progress and attach a human-readable note
+					if ($addFailedPaymentNote) {
+						$failedNote = 'Customer attempted an online payment via EasyOrders, but it failed.';
+						$currentNote = (string) $orderModel->note;
+						$orderModel->update([
+							'note' => trim($currentNote . (empty($currentNote) ? '' : ' ') . $failedNote),
+						]);
+					}
+				}
+
+				$firstOrderId = !empty($orderModels) ? (int) $orderModels[0]->id : null;
 				$temp->status = 'imported';
 				$temp->imported_order_id = $firstOrderId;
 				$temp->save();
