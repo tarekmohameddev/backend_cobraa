@@ -69,6 +69,7 @@ class WebhookService
 		$shippingCost = Arr::get($payload, 'shipping_cost');
 		$cost = Arr::get($payload, 'cost');
 		$expense = Arr::get($payload, 'expense');
+		$couponDiscount = Arr::get($payload, 'coupon_discount', 0);
 
 		// Build normalized snapshot as per plan
 		$normalized = [
@@ -95,10 +96,11 @@ class WebhookService
 			],
 			'payment_method' => Arr::get($payload, 'payment_method'),
 			'totals' => [
-				'cost' => $cost,
-				'shipping_cost' => $shippingCost,
-				'total_cost' => $totalCost,
-				'expense' => $expense,
+				'cost'            => $cost,
+				'shipping_cost'   => $shippingCost,
+				'total_cost'      => $totalCost,
+				'expense'         => $expense,
+				'coupon_discount' => $couponDiscount,
 			],
 			'status' => Arr::get($payload, 'status'),
 			'metadata' => Arr::get($payload, 'metadata', []),

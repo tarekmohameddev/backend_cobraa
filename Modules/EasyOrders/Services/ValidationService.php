@@ -77,8 +77,9 @@ class ValidationService
 		$cost = (float) ($normalized['totals']['cost'] ?? 0);
 		$shipping = (float) ($normalized['totals']['shipping_cost'] ?? 0);
 		$total = (float) ($normalized['totals']['total_cost'] ?? 0);
-		if (round($cost + $shipping, 2) !== round($total, 2)) {
-			$errors[] = "Totals mismatch: cost + shipping != total";
+		$couponDiscount = (float) ($normalized['totals']['coupon_discount'] ?? 0);
+		if (round($cost + $shipping - $couponDiscount, 2) !== round($total, 2)) {
+			$errors[] = "Totals mismatch: cost + shipping - coupon_discount != total";
 		}
 
 		DB::transaction(function () use ($temp, $normalized, $errors) {

@@ -99,51 +99,7 @@ class ImportService
 
 			if (data_get($result, 'status') === true) {
 				$orders = data_get($result, 'data', []);
-				// Apply external shipping_cost as delivery fee on created orders
-				$shipping = (float) ($temp->shipping_cost ?? data_get($normalized, 'totals.shipping_cost', 0));
-				if ($shipping > 0 && is_array($orders) && count($orders) > 0) {
-					$orderCount = count($orders);
-					if ($orderCount === 1) {
-						$order = $orders[0];
-						if (is_object($order) && method_exists($order, 'update')) {
-							$order->update([
-								'delivery_fee' => $shipping,
-								'total_price'  => ($order->total_price ?? 0) + $shipping,
-							]);
-						} elseif (is_array($order) && isset($order['id'])) {
-							$found = \App\Models\Order::find((int) $order['id']);
-							if ($found) {
-								$found->update([
-									'delivery_fee' => $shipping,
-									'total_price'  => ($found->total_price ?? 0) + $shipping,
-								]);
-							}
-						}
-					} else {
-						$portion = round($shipping / $orderCount, 2);
-						$applied = 0.0;
-						foreach ($orders as $idx => $order) {
-							$fee = ($idx === $orderCount - 1) ? round($shipping - $applied, 2) : $portion;
-							$applied += $fee;
-							if (is_object($order) && method_exists($order, 'update')) {
-								$order->update([
-									'delivery_fee' => $fee,
-									'total_price'  => ($order->total_price ?? 0) + $fee,
-								]);
-							} elseif (is_array($order) && isset($order['id'])) {
-								$found = \App\Models\Order::find((int) $order['id']);
-								if ($found) {
-									$found->update([
-										'delivery_fee' => $fee,
-										'total_price'  => ($found->total_price ?? 0) + $fee,
-									]);
-								}
-							}
-						}
-					}
-				}
-
-				// Normalize to actual Order models after potential updates
+				// Normalize to actual Order models
 				$orderModels = [];
 				foreach ($orders as $order) {
 					if (is_object($order) && $order instanceof OrderModel) {
@@ -152,6 +108,69 @@ class ImportService
 						$found = OrderModel::find((int) $order['id']);
 						if ($found) {
 							$orderModels[] = $found;
+						}
+					}
+				}
+
+				// Apply external shipping_cost as delivery fee on created orders
+				$shipping = (float) ($temp->shipping_cost ?? data_get($normalized, 'totals.shipping_cost', 0));
+				if ($shipping > 0 && !empty($orderModels)) {
+					$orderCount = count($orderModels);
+					if ($orderCount === 1) {
+						$order = $orderModels[0];
+						$order->update([
+							'delivery_fee' => $shipping,
+							'total_price'  => ($order->total_price ?? 0) + $shipping,
+						]);
+						$orderModels[0] = $order->fresh();
+					} else {
+						$portion = round($shipping / $orderCount, 2);
+						$applied = 0.0;
+						foreach ($orderModels as $idx => $order) {
+							$fee = ($idx === $orderCount - 1) ? round($shipping - $applied, 2) : $portion;
+							$applied += $fee;
+							$order->update([
+								'delivery_fee' => $fee,
+								'total_price'  => ($order->total_price ?? 0) + $fee,
+							]);
+							$orderModels[$idx] = $order->fresh();
+						}
+					}
+				}
+
+				// Apply external order-level coupon discount, distributed across created orders
+				$couponDiscount = (float) data_get($normalized, 'totals.coupon_discount', 0);
+				if ($couponDiscount > 0 && !empty($orderModels)) {
+					$sumTotal = collect($orderModels)->sum(fn (OrderModel $o) => (float) $o->total_price);
+
+					if ($sumTotal > 0) {
+						$remaining = min($couponDiscount, $sumTotal);
+						$applied   = 0.0;
+
+						foreach ($orderModels as $idx => $order) {
+							$isLast = $idx === (count($orderModels) - 1);
+
+							if ($isLast) {
+								$portion = round($remaining - $applied, 2);
+							} else {
+								$ratio   = $order->total_price / $sumTotal;
+								$portion = round($remaining * $ratio, 2);
+								$applied += $portion;
+							}
+
+							if ($portion <= 0) {
+								continue;
+							}
+
+							$newTotalPrice   = max(0, ($order->total_price ?? 0) - $portion);
+							$newTotalDiscount = max(0, ($order->total_discount ?? 0) + $portion);
+
+							$order->update([
+								'total_price'    => $newTotalPrice,
+								'total_discount' => $newTotalDiscount,
+							]);
+
+							$orderModels[$idx] = $order->fresh();
 						}
 					}
 				}
