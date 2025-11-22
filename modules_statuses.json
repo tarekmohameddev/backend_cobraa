@@ -1,4 +1,5 @@
 {
     "EasyOrders": true,
-    "UserManagement": true
+    "UserManagement": true,
+    "Stox": true
 }
