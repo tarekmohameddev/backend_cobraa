@@ -6,6 +6,10 @@ namespace Modules\EasyOrders\Services;
 
 use Illuminate\Support\Facades\DB;
 use Modules\EasyOrders\Entities\EasyOrdersTempOrder;
+use App\Models\Region;
+use App\Models\City;
+use App\Models\Area;
+use App\Models\UserAddress;
 use App\Models\Transaction;
 use App\Services\OrderService\OrderService;
 use App\Models\Stock;
@@ -47,15 +51,67 @@ class ImportService
 				);
 			}
 
-			// Prepare address
-			$addressText = $temp->address ?: data_get($normalized, 'customer.address');
-			$government = $temp->government ?: data_get($normalized, 'customer.government');
-			$addressArray = [
-				'government' => $government,
-				'line' => $addressText,
+			// Prepare address - simple free text, ignore government
+			$addressText = (string) ($temp->address ?: data_get($normalized, 'customer.address', ''));
+			$orderAddress = [
+				'address' => $addressText,
 			];
 
-			// We do not create a persistent UserAddress per your preference.
+			// Create a persistent UserAddress for this imported order if we have a user
+			$addressId = null;
+			if ($user) {
+				// Pick default region/city/area as the first active records
+				$defaultCity = City::query()->active()->orderBy('id')->first();
+				$defaultArea = null;
+				if ($defaultCity) {
+					$defaultArea = Area::query()
+						->active()
+						->where('city_id', $defaultCity->id)
+						->orderBy('id')
+						->first();
+				}
+
+				$regionId  = $defaultCity?->region_id;
+				$countryId = $defaultCity?->country_id;
+				$cityId    = $defaultCity?->id;
+				$areaId    = $defaultArea?->id;
+
+				// Fallback to first active region/area if city is missing
+				if (!$regionId) {
+					$defaultRegion = Region::query()->active()->orderBy('id')->first();
+					$regionId = $defaultRegion?->id;
+				}
+
+				if (!$areaId) {
+					$defaultArea = Area::query()->active()->orderBy('id')->first();
+					if ($defaultArea) {
+						$areaId    = $defaultArea->id;
+						$cityId    = $cityId ?: $defaultArea->city_id;
+						$countryId = $countryId ?: $defaultArea->country_id;
+						$regionId  = $regionId ?: $defaultArea->region_id;
+					}
+				}
+
+				$userAddressData = [
+					'user_id'    => $user->id,
+					// Minimal JSON structure, matching inner order address
+					'address'    => ['address' => $addressText],
+					'location'   => [],
+					'active'     => true,
+					'firstname'  => (string) ($customerName ?: $user->firstname ?: ''),
+					'lastname'   => '',
+					'phone'      => (string) ($customerPhone ?: $user->phone ?: ''),
+					'title'      => 'EasyOrders Address',
+					'region_id'  => $regionId,
+					'country_id' => $countryId,
+					'city_id'    => $cityId,
+					'area_id'    => $areaId,
+				];
+
+				/** @var UserAddress $userAddress */
+				$userAddress = UserAddress::query()->create($userAddressData);
+				$addressId   = $userAddress->id;
+			}
 
 			// Build POS payload grouped by shop
 			$byShop = [];
@@ -90,8 +146,12 @@ class ImportService
 				'user_id' => $user?->id,
 				'phone' => (string) ($customerPhone ?: ''),
 				'username' => (string) ($customerName ?: ''),
-				'address' => $addressArray,
+				// Store address as nested JSON: {"address": {"address": "..." }}
+				'address' => [
+					'address' => $orderAddress,
+				],
 				'location' => [],
+				'address_id' => $addressId,
 				'delivery_type' => OrderModel::DELIVERY,
 			];
 

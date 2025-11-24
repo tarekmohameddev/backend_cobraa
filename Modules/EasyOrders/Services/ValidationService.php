@@ -6,7 +6,9 @@ namespace Modules\EasyOrders\Services;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 use Modules\EasyOrders\Entities\EasyOrdersTempOrder;
+use Modules\EasyOrders\Jobs\ImportTempOrderJob;
 use App\Models\Stock;
 use App\Models\Product;
 
@@ -82,17 +84,29 @@ class ValidationService
 			$errors[] = "Totals mismatch: cost + shipping - coupon_discount != total";
 		}
 
-		DB::transaction(function () use ($temp, $normalized, $errors) {
+		$shouldAutoImport = false;
+
+		DB::transaction(function () use ($temp, $normalized, $errors, &$shouldAutoImport) {
 			$temp->normalized = $normalized;
 			if (empty($errors)) {
 				$temp->status = 'validated';
 				$temp->failure_reason = null;
+
+				// Optionally auto-import successfully validated orders
+				if (Config::get('easyorders.auto_import_validated', false)) {
+					$shouldAutoImport = true;
+				}
 			} else {
 				$temp->status = 'failed';
 				$temp->failure_reason = implode('; ', $errors);
 			}
 			$temp->save();
 		});
+
+		// Dispatch import job outside the DB transaction to avoid race conditions
+		if ($shouldAutoImport) {
+			ImportTempOrderJob::dispatch($temp->id)->onQueue('default');
+		}
 	}
 
 	/**
