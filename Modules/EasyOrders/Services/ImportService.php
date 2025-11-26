@@ -53,49 +53,57 @@ class ImportService
 
 			// Prepare address - simple free text, ignore government
 			$addressText = (string) ($temp->address ?: data_get($normalized, 'customer.address', ''));
+
+			// Resolve default region/country/city/area once, so we can reuse for both
+			// the order JSON address and the persistent user address.
+			$defaultCity = City::query()->active()->orderBy('id')->first();
+			$defaultArea = null;
+
+			if ($defaultCity) {
+				$defaultArea = Area::query()
+					->active()
+					->where('city_id', $defaultCity->id)
+					->orderBy('id')
+					->first();
+			}
+
+			$regionId  = $defaultCity?->region_id;
+			$countryId = $defaultCity?->country_id;
+			$cityId    = $defaultCity?->id;
+			$areaId    = $defaultArea?->id;
+
+			// Fallback to first active region/area if city is missing
+			if (!$regionId) {
+				$defaultRegion = Region::query()->active()->orderBy('id')->first();
+				$regionId = $defaultRegion?->id;
+			}
+
+			if (!$areaId) {
+				$defaultArea = Area::query()->active()->orderBy('id')->first();
+				if ($defaultArea) {
+					$areaId    = $defaultArea->id;
+					$cityId    = $cityId ?: $defaultArea->city_id;
+					$countryId = $countryId ?: $defaultArea->country_id;
+					$regionId  = $regionId ?: $defaultArea->region_id;
+				}
+			}
+
+			// Order address JSON: flat structure with free-text address and location IDs
 			$orderAddress = [
-				'address' => $addressText,
+				'address'    => $addressText,
+				'region_id'  => $regionId,
+				'country_id' => $countryId,
+				'city_id'    => $cityId,
+				'area_id'    => $areaId,
 			];
 
 			// Create a persistent UserAddress for this imported order if we have a user
 			$addressId = null;
 			if ($user) {
-				// Pick default region/city/area as the first active records
-				$defaultCity = City::query()->active()->orderBy('id')->first();
-				$defaultArea = null;
-				if ($defaultCity) {
-					$defaultArea = Area::query()
-						->active()
-						->where('city_id', $defaultCity->id)
-						->orderBy('id')
-						->first();
-				}
-
-				$regionId  = $defaultCity?->region_id;
-				$countryId = $defaultCity?->country_id;
-				$cityId    = $defaultCity?->id;
-				$areaId    = $defaultArea?->id;
-
-				// Fallback to first active region/area if city is missing
-				if (!$regionId) {
-					$defaultRegion = Region::query()->active()->orderBy('id')->first();
-					$regionId = $defaultRegion?->id;
-				}
-
-				if (!$areaId) {
-					$defaultArea = Area::query()->active()->orderBy('id')->first();
-					if ($defaultArea) {
-						$areaId    = $defaultArea->id;
-						$cityId    = $cityId ?: $defaultArea->city_id;
-						$countryId = $countryId ?: $defaultArea->country_id;
-						$regionId  = $regionId ?: $defaultArea->region_id;
-					}
-				}
-
 				$userAddressData = [
 					'user_id'    => $user->id,
-					// Minimal JSON structure, matching inner order address
-					'address'    => ['address' => $addressText],
+					// Store address as plain string to match other address flows
+					'address'    => $addressText,
 					'location'   => [],
 					'active'     => true,
 					'firstname'  => (string) ($customerName ?: $user->firstname ?: ''),
@@ -146,10 +154,8 @@ class ImportService
 				'user_id' => $user?->id,
 				'phone' => (string) ($customerPhone ?: ''),
 				'username' => (string) ($customerName ?: ''),
-				// Store address as nested JSON: {"address": {"address": "..." }}
-				'address' => [
-					'address' => $orderAddress,
-				],
+				// Store address as flat JSON: {"address": "...", "country_id": ..., "city_id": ..., "area_id": ...}
+				'address' => $orderAddress,
 				'location' => [],
 				'address_id' => $addressId,
 				'delivery_type' => OrderModel::DELIVERY,
