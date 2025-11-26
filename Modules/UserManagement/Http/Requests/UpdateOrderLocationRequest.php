@@ -15,7 +15,7 @@ class UpdateOrderLocationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'city_id' => 'required|integer|exists:cities,id',
+            'city_id' => 'nullable|integer|exists:cities,id',
             'area_id' => 'required|integer|exists:areas,id',
             'address' => 'nullable|string', // Text address
             'location' => 'nullable|array', // Lat/Lon

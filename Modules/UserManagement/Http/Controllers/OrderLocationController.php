@@ -6,6 +6,7 @@ namespace Modules\UserManagement\Http\Controllers;
 use App\Helpers\ResponseError;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
+use App\Models\Area;
 use App\Models\City;
 use App\Models\DeliveryPrice;
 use App\Models\Order;
@@ -58,8 +59,20 @@ class OrderLocationController extends Controller
         }
 
         $validated = $request->validated();
-        $cityId = $validated['city_id'];
         $areaId = $validated['area_id'];
+
+        // Resolve Area (required)
+        $area = Area::find($areaId);
+        if (!$area) {
+            return $this->errorResponse(ResponseError::ERROR_404, 'Area not found');
+        }
+
+        // City can be provided explicitly or will be derived from the Area
+        $cityId = $validated['city_id'] ?? $area->city_id;
+
+        if (!$cityId) {
+            return $this->errorResponse(ResponseError::ERROR_404, 'City not found for this area');
+        }
 
         // Find City to get country/region info
         $city = City::find($cityId);
