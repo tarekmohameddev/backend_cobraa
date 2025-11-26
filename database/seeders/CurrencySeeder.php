@@ -21,8 +21,8 @@ class CurrencySeeder extends Seeder
         $currencies = [
             [
                 'id' => 2,
-                'symbol' => '$',
-                'title' => 'USD',
+                'symbol' => 'EGP',
+                'title' => 'EGP',
                 'rate' => 1.0,
                 'default' => 1,
                 'active' => 1,

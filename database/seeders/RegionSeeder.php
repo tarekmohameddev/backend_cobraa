@@ -217,12 +217,20 @@ class RegionSeeder extends Seeder
 
         if (empty($area)) {
 
-            $area = Area::create([
-                'active'        => true,
-                'region_id'     => $region->id,
-                'country_id'    => $country->id,
-                'city_id'       => $city->id,
+            // Create area and keep the same ID as in the source JSON (for external mapping)
+            $area = new Area([
+                'active'     => true,
+                'region_id'  => $region->id,
+                'country_id' => $country->id,
+                'city_id'    => $city->id,
             ]);
+
+            // If the JSON contains an "id" field, use it as the primary key
+            if (data_get($item, 'id')) {
+                $area->id = data_get($item, 'id');
+            }
+
+            $area->save();
 
             $area->translations()->create([
                 'title'  => data_get($item, 'name'),

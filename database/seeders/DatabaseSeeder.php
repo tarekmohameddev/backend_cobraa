@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UnitSeeder::class);
         $this->call(UserSeeder::class);
         $this->call(RegionSeeder::class);
+        $this->call(DeliveryPriceSeeder::class);
         $this->call(OrderSeeder::class);
 
 //        if (app()->environment() == 'local') {
