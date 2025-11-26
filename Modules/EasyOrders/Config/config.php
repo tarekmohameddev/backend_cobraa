@@ -16,4 +16,14 @@ return [
 
 	// When true, any temp order that validates successfully will be auto-imported
 	'auto_import_validated' => env('EASYORDERS_AUTO_IMPORT_VALIDATED', false),
+
+	// ID of the main shop that will own all EasyOrders-imported products
+	'main_shop_id' => (int) env('EASYORDERS_MAIN_SHOP_ID', 1),
+
+	// EasyOrders public API rate limit (requests per minute)
+	'rate_limit_per_minute' => (int) env('EASYORDERS_RATE_LIMIT_PER_MINUTE', 40),
+
+	// Optional: slug of a root category under which auto-created EasyOrders
+	// categories will be nested. When null, categories are created at top level.
+	'root_category_slug' => env('EASYORDERS_ROOT_CATEGORY_SLUG', null),
 ];

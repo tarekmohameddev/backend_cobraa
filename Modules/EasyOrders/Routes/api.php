@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\EasyOrders\Http\Controllers\API\v1\Rest\Integrations\EasyOrdersWebhookController;
 use Modules\EasyOrders\Http\Controllers\API\v1\Dashboard\Admin\EasyOrders\StoreController;
 use Modules\EasyOrders\Http\Controllers\API\v1\Dashboard\Admin\EasyOrders\TempOrderController;
+use Modules\EasyOrders\Http\Controllers\API\v1\Dashboard\Admin\EasyOrders\ProductSyncController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,5 +39,9 @@ Route::prefix('v1')->group(function () {
 		Route::get('temp-orders/{id}', [TempOrderController::class, 'show']);
 		Route::post('temp-orders/{id}/approve', [TempOrderController::class, 'approve']);
 		Route::post('temp-orders/approve', [TempOrderController::class, 'approveBulk']);
+
+		// Product catalog sync from EasyOrders
+		Route::post('products/sync', [ProductSyncController::class, 'syncAll']);
+		Route::post('products/{externalProductId}/sync', [ProductSyncController::class, 'syncOne']);
 	});
 });

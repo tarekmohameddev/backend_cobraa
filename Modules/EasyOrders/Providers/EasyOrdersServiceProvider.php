@@ -28,6 +28,12 @@ class EasyOrdersServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Modules\EasyOrders\Console\Commands\SyncEasyOrdersProducts::class,
+            ]);
+        }
     }
 
     /**

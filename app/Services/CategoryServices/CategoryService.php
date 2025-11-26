@@ -10,7 +10,7 @@ use App\Services\CoreService;
 use App\Traits\SetTranslations;
 use DB;
 use Throwable;
-
+use Illuminate\Support\Facades\Log;
 class CategoryService extends CoreService
 {
     use SetTranslations;
@@ -53,6 +53,7 @@ class CategoryService extends CoreService
             return ['status' => true, 'code' => ResponseError::NO_ERROR];
         } catch (Throwable $e) {
             $this->error($e);
+            log::info($e->getMessage());
             return [
                 'status'  => false,
                 'code'    => ResponseError::ERROR_501,
