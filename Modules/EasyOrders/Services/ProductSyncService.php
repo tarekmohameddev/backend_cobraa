@@ -11,6 +11,7 @@ use App\Models\Language;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockExtra;
+use App\Models\Settings;
 use App\Services\CategoryServices\CategoryService;
 use App\Services\ProductService\ProductService;
 use Carbon\CarbonImmutable;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use Modules\EasyOrders\Entities\EasyOrdersProduct;
 use Modules\EasyOrders\Entities\EasyOrdersStore;
 
@@ -186,6 +188,61 @@ class ProductSyncService
 	}
 
 	/**
+	 * Download remote EasyOrders product images into local storage and return
+	 * an array of relative paths suitable for Product::uploads().
+	 *
+	 * @param array $urls
+	 * @return array
+	 */
+	private function downloadProductImages(array $urls): array
+	{
+		$urls = array_values(array_filter($urls));
+		if (empty($urls)) {
+			return [];
+		}
+
+		$stored = [];
+		$isAws = Settings::where('key', 'aws')->first()?->value;
+
+		foreach ($urls as $url) {
+			try {
+				$url = (string) $url;
+				if ($url === '' || (!str_starts_with($url, 'http://') && !str_starts_with($url, 'https://'))) {
+					continue;
+				}
+
+				$response = Http::timeout(20)->get($url);
+				if (!$response->successful()) {
+					continue;
+				}
+
+				$content = $response->body();
+				if ($content === '' || $content === null) {
+					continue;
+				}
+
+				$path = parse_url($url, PHP_URL_PATH) ?: '';
+				$ext = strtolower(pathinfo($path, PATHINFO_EXTENSION) ?: 'jpg');
+
+				$dir = 'products';
+				$date = Str::slug(now()->format('Y-m-d H:i:s')) . Str::random(6);
+
+				// Physical storage path (relative to disk root)
+				$diskPath = "images/$dir/$date.$ext";
+
+				Storage::disk($isAws ? 's3' : 'public')->put($diskPath, $content, 'public');
+
+				// Public-facing relative path (used by Loadable::uploads & Gallery.path)
+				$stored[] = "storage/$diskPath";
+			} catch (\Throwable) {
+				continue;
+			}
+		}
+
+		return $stored;
+	}
+
+	/**
 	 * EasyOrders list endpoint may return either a plain array of products or a wrapper with `data`.
 	 */
 	private function extractProductsFromListResponse(array $response): array
@@ -218,7 +275,7 @@ class ProductSyncService
 
 		$defaultLocale = Language::where('default', 1)->first()?->locale ?? 'en';
 
-		$images = collect([
+		$remoteImages = collect([
 			Arr::get($eoProduct, 'thumb'),
 		])
 			->filter()
@@ -226,6 +283,9 @@ class ProductSyncService
 			->filter()
 			->values()
 			->all();
+
+		// Download remote images into local storage and use local paths for galleries.
+		$images = $this->downloadProductImages($remoteImages);
 
 		// Normalize and limit keywords to column size (191 chars) without newlines.
 		$rawKeywords = (string) Arr::get($eoProduct, 'meta_description', '');
