@@ -6,6 +6,7 @@ namespace Modules\EasyOrders\Services;
 
 use Illuminate\Support\Facades\DB;
 use Modules\EasyOrders\Entities\EasyOrdersTempOrder;
+use Carbon\Carbon;
 use App\Models\Region;
 use App\Models\City;
 use App\Models\Area;
@@ -121,6 +122,31 @@ class ImportService
 				$addressId   = $userAddress->id;
 			}
 
+			// Derive delivery date & time (optional) from EasyOrders payload/normalized metadata
+			$deliveryDateRaw = data_get($normalized, 'delivery.date')
+				?? data_get($normalized, 'metadata.delivery_date')
+				?? data_get($temp->payload ?? [], 'delivery_date');
+
+			$deliveryTimeRaw = data_get($normalized, 'delivery.time')
+				?? data_get($normalized, 'metadata.delivery_time')
+				?? data_get($temp->payload ?? [], 'delivery_time');
+
+			$deliveryDateTime = null;
+
+			if ($deliveryDateRaw || $deliveryTimeRaw) {
+				try {
+					if ($deliveryDateRaw && $deliveryTimeRaw) {
+						$deliveryDateTime = Carbon::parse(trim((string)$deliveryDateRaw . ' ' . (string)$deliveryTimeRaw));
+					} elseif ($deliveryDateRaw) {
+						$deliveryDateTime = Carbon::parse((string)$deliveryDateRaw);
+					} else {
+						$deliveryDateTime = Carbon::parse((string)$deliveryTimeRaw);
+					}
+				} catch (\Throwable $e) {
+					$deliveryDateTime = null;
+				}
+			}
+
 			// Build POS payload grouped by shop
 			$byShop = [];
 			foreach ($items as $item) {
@@ -159,6 +185,8 @@ class ImportService
 				'location' => [],
 				'address_id' => $addressId,
 				'delivery_type' => OrderModel::DELIVERY,
+				// Optional delivery date/time coming from EasyOrders (if present)
+				'delivery_date' => $deliveryDateTime?->format('Y-m-d H:i'),
 			];
 
 			$result = (new OrderService)->create($payload);
