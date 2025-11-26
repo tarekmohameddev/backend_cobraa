@@ -104,10 +104,8 @@ class UserAddressController extends Controller
                 'title'     => $validated['title'],
                 'city_id'   => $cityId,
                 'area_id'   => $validated['area_id'],
-                // Store address as an array so it becomes JSON like: {"address": "Bänikonstrasse, ..."}
-                'address'   => [
-                    'address' => $validated['address'],
-                ],
+                // Store address as plain string so JSON looks like: {"address": "Bänikonstrasse, ..."}
+                'address'   => $validated['address'],
                 'firstname' => $firstname, // Address contact name defaults to user name
                 'lastname'  => $lastname,
                 'phone'     => $validated['second_phone'] ?? $validated['phone'], // Use second_phone if available, else main phone
@@ -204,10 +202,8 @@ class UserAddressController extends Controller
                 'title'              => $validated['title'],
                 'city_id'            => $cityId,
                 'area_id'            => $validated['area_id'],
-                // Store address as an array so it becomes JSON like: {"address": "Bänikonstrasse, ..."}
-                'address'            => [
-                    'address' => $validated['address'],
-                ],
+                // Store address as plain string so JSON looks like: {"address": "Bänikonstrasse, ..."}
+                'address'            => $validated['address'],
                 'firstname'          => $user->firstname,
                 'lastname'           => $user->lastname,
                 'phone'              => $user->phone,

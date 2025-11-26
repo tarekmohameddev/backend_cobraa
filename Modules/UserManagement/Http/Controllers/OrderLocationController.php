@@ -96,7 +96,8 @@ class OrderLocationController extends Controller
             'region_id'  => $city->region_id,
             'city_id'    => $cityId,
             'area_id'    => $areaId,
-            'address'    => ['address' => $validated['address'] ?? ''],
+            // Store address as plain string in user_addresses.address
+            'address'    => $validated['address'] ?? '',
             'location'   => $validated['location'] ?? [],
             'active'     => true,
             'firstname'  => $order->username ?? '',
