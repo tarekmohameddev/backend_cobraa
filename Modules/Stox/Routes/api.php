@@ -22,6 +22,7 @@ Route::prefix('v1')
             Route::post('orders/{order}/export', [StoxOrderController::class, 'export']);
             Route::get('orders/{stoxOrder}', [StoxOrderController::class, 'show']);
             Route::post('orders/{stoxOrder}/retry', [StoxOrderController::class, 'retry']);
+            Route::get('orders/check-export/{orderId}', [StoxOrderController::class, 'checkExportStatus']);
 
             Route::get('operation-logs', [StoxOperationLogController::class, 'index']);
             Route::get('operation-logs/export', [StoxOperationLogController::class, 'export']);

@@ -104,5 +104,28 @@ class StoxOrderController extends Controller
 
         return $this->successResponse($result['message'], StoxOrderResource::make($resourceData));
     }
+
+    public function checkExportStatus(int $orderId): JsonResponse
+    {
+        $stoxOrder = StoxOrder::query()
+            ->where('order_id', $orderId)
+            ->orderByDesc('id')
+            ->first();
+
+        $data = [
+            'order_id' => $orderId,
+            'has_stox_order' => (bool) $stoxOrder,
+            'export_status' => $stoxOrder?->export_status,
+            'stox_order_id' => $stoxOrder?->id,
+            'external_order_id' => $stoxOrder?->external_order_id,
+            'awb_number' => $stoxOrder?->awb_number,
+            'exported_at' => $stoxOrder?->exported_at,
+        ];
+
+        return $this->successResponse(
+            __('errors.' . ResponseError::NO_ERROR),
+            $data
+        );
+    }
 }
 
