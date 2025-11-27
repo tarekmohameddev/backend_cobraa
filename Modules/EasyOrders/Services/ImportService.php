@@ -186,7 +186,8 @@ class ImportService
 				'address_id' => $addressId,
 				'delivery_type' => OrderModel::DELIVERY,
 				// Optional delivery date/time coming from EasyOrders (if present)
-				'delivery_date' => $deliveryDateTime?->format('Y-m-d H:i'),
+				// Stored with seconds precision: Y-m-d H:i:s (e.g. 2025-11-30 18:06:00)
+				'delivery_date' => $deliveryDateTime?->format('Y-m-d H:i:s'),
 			];
 
 			$result = (new OrderService)->create($payload);
