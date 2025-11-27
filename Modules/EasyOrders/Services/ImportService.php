@@ -271,7 +271,7 @@ class ImportService
 						'price'              => $orderModel->total_price,
 						'user_id'            => $orderModel->user_id,
 						// We intentionally keep payment_sys_id null here; EasyOrders is an external source
-						'payment_sys_id'     => null,
+						'payment_sys_id'     => 1,
 						'payment_trx_id'     => (string) $temp->external_order_id,
 						'note'               => "EasyOrders order #{$temp->external_order_id}",
 						'perform_time'       => now(),
