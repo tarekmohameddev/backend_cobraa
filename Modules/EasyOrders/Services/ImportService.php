@@ -122,30 +122,8 @@ class ImportService
 				$addressId   = $userAddress->id;
 			}
 
-			// Derive delivery date & time (optional) from EasyOrders payload/normalized metadata
-			$deliveryDateRaw = data_get($normalized, 'delivery.date')
-				?? data_get($normalized, 'metadata.delivery_date')
-				?? data_get($temp->payload ?? [], 'delivery_date');
-
-			$deliveryTimeRaw = data_get($normalized, 'delivery.time')
-				?? data_get($normalized, 'metadata.delivery_time')
-				?? data_get($temp->payload ?? [], 'delivery_time');
-
-			$deliveryDateTime = null;
-
-			if ($deliveryDateRaw || $deliveryTimeRaw) {
-				try {
-					if ($deliveryDateRaw && $deliveryTimeRaw) {
-						$deliveryDateTime = Carbon::parse(trim((string)$deliveryDateRaw . ' ' . (string)$deliveryTimeRaw));
-					} elseif ($deliveryDateRaw) {
-						$deliveryDateTime = Carbon::parse((string)$deliveryDateRaw);
-					} else {
-						$deliveryDateTime = Carbon::parse((string)$deliveryTimeRaw);
-					}
-				} catch (\Throwable $e) {
-					$deliveryDateTime = null;
-				}
-			}
+			// Always use "today + 4 days" for delivery date (ignore EasyOrders delivery dates)
+			$deliveryDateString = Carbon::now()->addDays(4)->format('Y-m-d H:i:s');
 
 			// Build POS payload grouped by shop
 			$byShop = [];
@@ -186,8 +164,8 @@ class ImportService
 				'address_id' => $addressId,
 				'delivery_type' => OrderModel::DELIVERY,
 				// Optional delivery date/time coming from EasyOrders (if present)
-				// Stored with seconds precision: Y-m-d H:i:s (e.g. 2025-11-30 18:06:00)
-				'delivery_date' => $deliveryDateTime?->format('Y-m-d H:i:s'),
+				// Stored with seconds precision when parsable (e.g. 2025-11-30 18:06:00)
+				'delivery_date' => $deliveryDateString,
 			];
 
 			$result = (new OrderService)->create($payload);
