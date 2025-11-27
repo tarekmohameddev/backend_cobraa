@@ -119,6 +119,7 @@ class StoxOrderController extends Controller
             'stox_order_id' => $stoxOrder?->id,
             'external_order_id' => $stoxOrder?->external_order_id,
             'awb_number' => $stoxOrder?->awb_number,
+            'last_error' => $stoxOrder?->last_error,
             'exported_at' => $stoxOrder?->exported_at,
         ];
 
