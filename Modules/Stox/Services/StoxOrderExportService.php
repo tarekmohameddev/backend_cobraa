@@ -6,6 +6,7 @@ namespace Modules\Stox\Services;
 
 use App\Models\Order;
 use App\Models\User;
+use App\Services\OrderService\OrderStatusUpdateService;
 use App\Models\Area;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -22,6 +23,7 @@ class StoxOrderExportService
 
     public function __construct(
         private readonly StoxApiService $apiService,
+        private readonly OrderStatusUpdateService $orderStatusUpdateService,
     ) {
     }
 
@@ -68,6 +70,9 @@ class StoxOrderExportService
 
             if ($result['success']) {
                 $this->handleSuccessfulExport($stoxOrder, $result['data'] ?? []);
+
+                // Attempt to auto-update order status after successful export.
+                $this->autoUpdateOrderStatus($order, $account, $stoxOrder, $triggeredBy, $payload, $triggerType, $executionTime);
 
                 $this->logStoxOperation(
                     'order_export_success',
@@ -345,6 +350,120 @@ class StoxOrderExportService
             'export_status' => 'failed',
             'last_error' => $message,
         ])->save();
+    }
+
+    /**
+     * After a successful export to Stox, attempt to move the order to `accepted`
+     * (if needed) and then to `on_a_way` using the central OrderStatusUpdateService.
+     * Any failures here are logged but do not affect the export result.
+     */
+    private function autoUpdateOrderStatus(
+        Order $order,
+        StoxAccount $account,
+        StoxOrder $stoxOrder,
+        ?User $triggeredBy,
+        array $payload,
+        string $triggerType,
+        int $executionTimeMs
+    ): void {
+        try {
+            // Refresh order to ensure we work with the latest state.
+            $order->refresh();
+
+            // First move to accepted if it's not already there.
+            if ($order->status !== Order::STATUS_ACCEPTED) {
+                $resultAccepted = $this->orderStatusUpdateService->statusUpdate($order, [
+                    'status' => Order::STATUS_ACCEPTED,
+                    'notes' => [],
+                ]);
+
+                if (!data_get($resultAccepted, 'status')) {
+                    $this->logStoxOperation(
+                        'order_status_auto_update_failed',
+                        $account,
+                        $stoxOrder,
+                        $order->id,
+                        $triggeredBy,
+                        [
+                            'target_status' => Order::STATUS_ACCEPTED,
+                            'service_result' => $resultAccepted,
+                        ],
+                        null,
+                        null,
+                        $triggerType,
+                        data_get($resultAccepted, 'message'),
+                    );
+
+                    // If we cannot even set it to accepted, stop here.
+                    return;
+                }
+
+                // Make sure we are working with the updated instance.
+                /** @var Order $order */
+                $order = data_get($resultAccepted, 'data', $order);
+            }
+
+            // Then move to on_a_way.
+            $resultOnAWay = $this->orderStatusUpdateService->statusUpdate($order, [
+                'status' => Order::STATUS_ON_A_WAY,
+                'notes' => [],
+            ]);
+
+            if (!data_get($resultOnAWay, 'status')) {
+                $this->logStoxOperation(
+                    'order_status_auto_update_failed',
+                    $account,
+                    $stoxOrder,
+                    $order->id,
+                    $triggeredBy,
+                    [
+                        'target_status' => Order::STATUS_ON_A_WAY,
+                        'service_result' => $resultOnAWay,
+                    ],
+                    null,
+                    null,
+                    $triggerType,
+                    data_get($resultOnAWay, 'message'),
+                );
+
+                return;
+            }
+
+            // Log a dedicated success operation for traceability.
+            $this->logStoxOperation(
+                'order_status_auto_updated',
+                $account,
+                $stoxOrder,
+                $order->id,
+                $triggeredBy,
+                [
+                    'from_status' => $order->getOriginal('status'),
+                    'to_status' => Order::STATUS_ON_A_WAY,
+                ],
+                null,
+                null,
+                $triggerType,
+                null,
+                null,
+                $executionTimeMs
+            );
+        } catch (Throwable $e) {
+            $this->logStoxOperation(
+                'order_status_auto_update_failed',
+                $account,
+                $stoxOrder,
+                $order->id,
+                $triggeredBy,
+                [
+                    'exception_message' => $e->getMessage(),
+                ],
+                null,
+                null,
+                $triggerType,
+                $e->getMessage(),
+                $e->getTraceAsString()
+            );
+        }
     }
 }
 
