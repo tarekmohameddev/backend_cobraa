@@ -56,8 +56,8 @@ class ImportService
 			// Prepare address - simple free text, ignore government
 			$addressText = (string) ($temp->address ?: data_get($normalized, 'customer.address', ''));
 
-			// Resolve default region/country/city/area once, so we can reuse for both
-			// the order JSON address and the persistent user address.
+			// Resolve default region/country once, but keep city/area null by default.
+			// This forces admins to explicitly select the correct city/area later.
 			$defaultCity = City::query()->active()->orderBy('id')->first();
 			$defaultArea = null;
 
@@ -71,8 +71,8 @@ class ImportService
 
 			$regionId  = $defaultCity?->region_id;
 			$countryId = $defaultCity?->country_id;
-			$cityId    = $defaultCity?->id;
-			$areaId    = $defaultArea?->id;
+			$cityId    = null;
+			$areaId    = null;
 
 			// Fallback to first active region/area if city is missing
 			if (!$regionId) {
@@ -80,15 +80,8 @@ class ImportService
 				$regionId = $defaultRegion?->id;
 			}
 
-			if (!$areaId) {
-				$defaultArea = Area::query()->active()->orderBy('id')->first();
-				if ($defaultArea) {
-					$areaId    = $defaultArea->id;
-					$cityId    = $cityId ?: $defaultArea->city_id;
-					$countryId = $countryId ?: $defaultArea->country_id;
-					$regionId  = $regionId ?: $defaultArea->region_id;
-				}
-			}
+			// We intentionally do NOT auto-fill city/area: they should remain null by default
+			// so that admins are forced to choose a concrete city/area before fulfillment.
 
 			// Order address JSON: flat structure with free-text address and location IDs
 			$orderAddress = [

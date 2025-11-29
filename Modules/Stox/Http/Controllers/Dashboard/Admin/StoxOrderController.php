@@ -50,12 +50,25 @@ class StoxOrderController extends Controller
 
     public function export(StoxOrderExportRequest $request, int $orderId): JsonResponse
     {
-        log::info('here _ 1');
         $data = $request->validated();
         $order = Order::query()->findOrFail($orderId);
+
+        // Ensure order has a concrete city/area (or override provides one) before sending to Stox.
+        $address = is_array($order->address) ? $order->address : [];
+        $overrideData = $data['override_data'] ?? [];
+
+        $effectiveAreaId = $overrideData['area_id'] ?? ($address['area_id'] ?? null);
+
+        if (empty($effectiveAreaId)) {
+            return $this->errorResponse(
+                ResponseError::ERROR_400,
+                'Please select a city/area for this order before sending it to Stox.',
+                400
+            );
+        }
+
         /** @var StoxAccount $account */
         $account = StoxAccount::query()->findOrFail($data['stox_account_id']);
-        log::info('here _ 2');
         $result = $this->exportService->export(
             $order,
             $account,

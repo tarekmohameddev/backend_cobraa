@@ -144,7 +144,8 @@ class StoxOrderExportService
         $paymentType = $this->resolvePaymentType($order, $account, $overrideData);
         $totalQuantity = (int) $order->orderDetails->sum('quantity');
 
-        $areaId = (int) Arr::get($overrideData, 'area_id', Arr::get($address, 'area_id', 1));
+        // Resolve area_id: prefer explicit override, then order address; no hard-coded default.
+        $areaId = Arr::get($overrideData, 'area_id', Arr::get($address, 'area_id'));
 
         // Resolve area name:
         // 1) explicit override
