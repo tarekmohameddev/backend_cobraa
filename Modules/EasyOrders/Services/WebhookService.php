@@ -9,10 +9,12 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Modules\EasyOrders\Entities\EasyOrdersStore;
 use Modules\EasyOrders\Entities\EasyOrdersTempOrder;
 use Modules\EasyOrders\Repositories\EasyOrdersStoreRepository;
 use Modules\EasyOrders\Repositories\EasyOrdersTempOrderRepository;
 use Modules\EasyOrders\Jobs\ValidateTempOrderJob;
+use Modules\EasyOrders\Jobs\WaitForPaymentStatusJob;
 
 class WebhookService
 {
@@ -62,6 +64,79 @@ class WebhookService
 		}
 
 		// Fetch full order details from EasyOrders API instead of relying solely on webhook payload
+		$payload = $this->fetchOrderDetails($store, $externalOrderId);
+
+		$normalizedData = $this->normalizeOrderPayload($payload, $externalOrderId);
+
+		$paymentMethod = Arr::get($payload, 'payment_method');
+		$externalStatus = Arr::get($payload, 'status');
+
+		$codMethods = ['cod', 'cash_on_delivery'];
+		$waitForOnlinePayment = (bool) Config::get('easyorders.wait_for_online_payment', true);
+
+		$shouldWaitForPayment = $waitForOnlinePayment
+			&& $paymentMethod !== null
+			&& !in_array($paymentMethod, $codMethods, true)
+			&& $externalStatus === 'pending_payment';
+
+		return DB::transaction(function () use ($store, $payload, $normalizedData, $shouldWaitForPayment, $paymentMethod, $externalStatus) {
+			$createdDay = $normalizedData['created_day'];
+			$cost = $normalizedData['cost'];
+			$shippingCost = $normalizedData['shipping_cost'];
+			$totalCost = $normalizedData['total_cost'];
+			$expense = $normalizedData['expense'];
+			$normalized = $normalizedData['normalized'];
+
+			$temp = new EasyOrdersTempOrder();
+			$temp->store_id = $store->id;
+			$temp->external_order_id = (string) Arr::get($payload, 'id');
+			$temp->short_id = Arr::get($payload, 'short_id');
+			$temp->guest_id = Arr::get($payload, 'guest_id');
+
+			if ($shouldWaitForPayment) {
+				$temp->status = 'waiting_payment';
+			} else {
+				$temp->status = 'pending';
+			}
+
+			$temp->cost = $cost !== null ? (float) $cost : null;
+			$temp->shipping_cost = $shippingCost !== null ? (float) $shippingCost : null;
+			$temp->total_cost = $totalCost !== null ? (float) $totalCost : null;
+			$temp->expense = $expense !== null ? (float) $expense : null;
+			$temp->customer_name = Arr::get($payload, 'full_name');
+			$temp->customer_phone = Arr::get($payload, 'phone');
+			$temp->government = Arr::get($payload, 'government');
+			$temp->address = Arr::get($payload, 'address');
+			$temp->payment_method = Arr::get($payload, 'payment_method');
+			$temp->ip = Arr::get($payload, 'ip');
+			$temp->ip_country = Arr::get($payload, 'ip_country');
+			$temp->created_day = $createdDay;
+			$temp->payload = $payload;
+			$temp->normalized = $normalized;
+
+			if ($shouldWaitForPayment) {
+				$timeoutMinutes = (int) Config::get('easyorders.online_payment_timeout_minutes', 30);
+				$temp->payment_poll_deadline_at = CarbonImmutable::now()->addMinutes($timeoutMinutes);
+				$temp->payment_poll_attempts = 0;
+			}
+
+			$temp->save();
+
+			// Queue next step:
+			// - For COD and already-final non-COD orders, go directly to validation.
+			// - For non-COD pending_payment orders, wait for final payment status via polling job.
+			if ($shouldWaitForPayment) {
+				WaitForPaymentStatusJob::dispatch($temp->id)->onQueue('default');
+			} else {
+				ValidateTempOrderJob::dispatch($temp->id)->onQueue('default');
+			}
+
+			return $temp;
+		});
+	}
+
+	public function fetchOrderDetails(EasyOrdersStore $store, string $externalOrderId): array
+	{
 		$baseUrl = rtrim((string) Config::get('easyorders.base_url'), '/');
 		$orderPath = trim((string) Config::get('easyorders.order_details_path', '/external-apps/orders'), '/');
 		$url = $baseUrl . '/' . $orderPath . '/' . urlencode($externalOrderId);
@@ -77,8 +152,14 @@ class WebhookService
 			abort(502, 'Failed to fetch order details from EasyOrders.');
 		}
 
-		$payload = $response->json() ?? [];
+		return $response->json() ?? [];
+	}
 
+	/**
+	 * Build normalized snapshot for an EasyOrders order payload.
+	 */
+	public function normalizeOrderPayload(array $payload, string $externalOrderId): array
+	{
 		$now = CarbonImmutable::now();
 		$createdAt = Arr::get($payload, 'created_at');
 		$createdDay = $createdAt ? (new CarbonImmutable($createdAt))->toDateString() : $now->toDateString();
@@ -90,7 +171,6 @@ class WebhookService
 		$expense = Arr::get($payload, 'expense');
 		$couponDiscount = Arr::get($payload, 'coupon_discount', 0);
 
-		// Build normalized snapshot as per plan
 		$normalized = [
 			'external_order_id' => $externalOrderId,
 			'short_id' => Arr::get($payload, 'short_id'),
@@ -156,34 +236,15 @@ class WebhookService
 			}, $cartItems),
 		];
 
-		return DB::transaction(function () use ($store, $payload, $normalized, $createdDay, $totalCost, $shippingCost, $cost, $expense) {
-			$temp = new EasyOrdersTempOrder();
-			$temp->store_id = $store->id;
-			$temp->external_order_id = (string) Arr::get($payload, 'id');
-			$temp->short_id = Arr::get($payload, 'short_id');
-			$temp->guest_id = Arr::get($payload, 'guest_id');
-			$temp->status = 'pending';
-			$temp->cost = $cost !== null ? (float) $cost : null;
-			$temp->shipping_cost = $shippingCost !== null ? (float) $shippingCost : null;
-			$temp->total_cost = $totalCost !== null ? (float) $totalCost : null;
-			$temp->expense = $expense !== null ? (float) $expense : null;
-			$temp->customer_name = Arr::get($payload, 'full_name');
-			$temp->customer_phone = Arr::get($payload, 'phone');
-			$temp->government = Arr::get($payload, 'government');
-			$temp->address = Arr::get($payload, 'address');
-			$temp->payment_method = Arr::get($payload, 'payment_method');
-			$temp->ip = Arr::get($payload, 'ip');
-			$temp->ip_country = Arr::get($payload, 'ip_country');
-			$temp->created_day = $createdDay;
-			$temp->payload = $payload;
-			$temp->normalized = $normalized;
-			$temp->save();
-
-			// Queue validation
-			ValidateTempOrderJob::dispatch($temp->id)->onQueue('default');
-
-			return $temp;
-		});
+		return [
+			'normalized' => $normalized,
+			'created_day' => $createdDay,
+			'cost' => $cost,
+			'shipping_cost' => $shippingCost,
+			'total_cost' => $totalCost,
+			'expense' => $expense,
+			'coupon_discount' => $couponDiscount,
+		];
 	}
 }
 

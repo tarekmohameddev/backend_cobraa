@@ -36,6 +36,8 @@ class EasyOrdersTempOrder extends Model
 		'payload',
 		'normalized',
 		'imported_order_id',
+		'payment_poll_deadline_at',
+		'payment_poll_attempts',
 	];
 
 	protected $casts = [
@@ -46,6 +48,8 @@ class EasyOrdersTempOrder extends Model
 		'shipping_cost' => 'decimal:2',
 		'total_cost' => 'decimal:2',
 		'expense' => 'decimal:2',
+		'payment_poll_deadline_at' => 'datetime',
+		'payment_poll_attempts' => 'integer',
 	];
 
 	public function store(): BelongsTo

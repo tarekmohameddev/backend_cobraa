@@ -26,4 +26,12 @@ return [
 	// Optional: slug of a root category under which auto-created EasyOrders
 	// categories will be nested. When null, categories are created at top level.
 	'root_category_slug' => env('EASYORDERS_ROOT_CATEGORY_SLUG', null),
+
+	// Online payment handling
+	// When true, non-COD orders that are still in pending_payment will not be
+	// validated/imported immediately, but instead will be polled until they
+	// reach a final paid/paid_failed status or time out.
+	'wait_for_online_payment' => (bool) env('EASYORDERS_WAIT_FOR_ONLINE_PAYMENT', true),
+	'online_payment_timeout_minutes' => (int) env('EASYORDERS_ONLINE_PAYMENT_TIMEOUT_MINUTES', 30),
+	'online_payment_poll_interval_seconds' => (int) env('EASYORDERS_ONLINE_PAYMENT_POLL_INTERVAL_SECONDS', 60),
 ];
