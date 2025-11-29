@@ -230,10 +230,18 @@ class ProductSyncService
 				// Physical storage path (relative to disk root)
 				$diskPath = "images/$dir/$date.$ext";
 
-				Storage::disk($isAws ? 's3' : 'public')->put($diskPath, $content, 'public');
+				$disk = $isAws ? 's3' : 'public';
+				Storage::disk($disk)->put($diskPath, $content, 'public');
 
-				// Public-facing relative path (used by Loadable::uploads & Gallery.path)
-				$stored[] = "storage/$diskPath";
+				// Public-facing URL:
+				// - For S3, use the disk URL directly (already absolute).
+				// - For local "public" disk, turn the relative Storage URL into a full backend URL.
+				$publicPath = Storage::disk($disk)->url($diskPath);
+				if (!$isAws) {
+					$publicPath = url($publicPath);
+				}
+
+				$stored[] = $publicPath;
 			} catch (\Throwable) {
 				continue;
 			}
