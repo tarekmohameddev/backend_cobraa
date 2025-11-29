@@ -7,10 +7,12 @@ namespace Modules\EasyOrders\Services;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Modules\EasyOrders\Entities\EasyOrdersStore;
 use Modules\EasyOrders\Entities\EasyOrdersTempOrder;
+use Modules\EasyOrders\Entities\EasyOrdersWebhookLog;
 use Modules\EasyOrders\Repositories\EasyOrdersStoreRepository;
 use Modules\EasyOrders\Repositories\EasyOrdersTempOrderRepository;
 use Modules\EasyOrders\Jobs\ValidateTempOrderJob;
@@ -52,6 +54,9 @@ class WebhookService
 			abort(401, 'Invalid webhook secret');
 		}
 
+		// Keep a copy of the raw webhook body for logging/audit purposes.
+		$webhookBody = $payload;
+
 		$externalOrderId = (string) Arr::get($payload, 'id');
 		if (!$externalOrderId) {
 			abort(422, 'Missing order id');
@@ -63,7 +68,16 @@ class WebhookService
 			return $duplicate;
 		}
 
-		// Fetch full order details from EasyOrders API instead of relying solely on webhook payload
+		// Create a webhook log entry for observability.
+		$log = EasyOrdersWebhookLog::query()->create([
+			'store_id' => $store->id,
+			'request_headers' => $headers,
+			'request_body' => $webhookBody,
+			'http_status' => null,
+			'error' => null,
+		]);
+
+		// Fetch full order details from EasyOrders API instead of relying solely on webhook payload.
 		$payload = $this->fetchOrderDetails($store, $externalOrderId);
 
 		$normalizedData = $this->normalizeOrderPayload($payload, $externalOrderId);
@@ -79,7 +93,15 @@ class WebhookService
 			&& !in_array($paymentMethod, $codMethods, true)
 			&& $externalStatus === 'pending_payment';
 
-		return DB::transaction(function () use ($store, $payload, $normalizedData, $shouldWaitForPayment, $paymentMethod, $externalStatus) {
+		Log::info('EasyOrders webhook received order', [
+			'store_id' => $store->id,
+			'external_order_id' => $externalOrderId,
+			'payment_method' => $paymentMethod,
+			'external_status' => $externalStatus,
+			'should_wait_for_payment' => $shouldWaitForPayment,
+		]);
+
+		$temp = DB::transaction(function () use ($store, $payload, $normalizedData, $shouldWaitForPayment) {
 			$createdDay = $normalizedData['created_day'];
 			$cost = $normalizedData['cost'];
 			$shippingCost = $normalizedData['shipping_cost'];
@@ -126,13 +148,28 @@ class WebhookService
 			// - For COD and already-final non-COD orders, go directly to validation.
 			// - For non-COD pending_payment orders, wait for final payment status via polling job.
 			if ($shouldWaitForPayment) {
+				Log::info('EasyOrders webhook: queued WaitForPaymentStatusJob', [
+					'temp_order_id' => $temp->id,
+					'store_id' => $temp->store_id,
+				]);
 				WaitForPaymentStatusJob::dispatch($temp->id)->onQueue('default');
 			} else {
+				Log::info('EasyOrders webhook: queued ValidateTempOrderJob', [
+					'temp_order_id' => $temp->id,
+					'store_id' => $temp->store_id,
+				]);
 				ValidateTempOrderJob::dispatch($temp->id)->onQueue('default');
 			}
 
 			return $temp;
 		});
+
+		// Mark webhook log as successfully handled.
+		$log->http_status = 200;
+		$log->error = null;
+		$log->save();
+
+		return $temp;
 	}
 
 	public function fetchOrderDetails(EasyOrdersStore $store, string $externalOrderId): array
