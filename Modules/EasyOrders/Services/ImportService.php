@@ -17,6 +17,7 @@ use App\Models\Stock;
 use App\Models\User;
 use App\Models\Order as OrderModel;
 use App\Services\TransactionService\TransactionService;
+use App\Models\DeliveryPrice;
 
 class ImportService
 {
@@ -248,6 +249,28 @@ class ImportService
 					}
 				}
 
+				// Attach a default delivery_price_id for each imported order when possible.
+				// We reuse the same default city/area that were used for address creation,
+				// so EasyOrders imports always have a valid delivery pricing configuration.
+				if (!empty($orderModels)) {
+					foreach ($orderModels as $idx => $order) {
+						/** @var OrderModel $order */
+						if (!$order->shop_id) {
+							continue;
+						}
+
+						$deliveryPrice = $this->resolveDeliveryPriceForShopAndLocation((int) $order->shop_id, $cityId, $areaId);
+
+						if ($deliveryPrice) {
+							$order->update([
+								'delivery_price_id' => $deliveryPrice->id,
+							]);
+
+							$orderModels[$idx] = $order->fresh();
+						}
+					}
+				}
+
 				// Determine transaction status based on EasyOrders payment method & status
 				$txStatus = Transaction::STATUS_PROGRESS;
 				$paymentMethodLower = strtolower($paymentMethod);
@@ -304,6 +327,56 @@ class ImportService
 				$temp->save();
 			}
 		});
+	}
+
+	/**
+	 * Resolve a suitable DeliveryPrice for a given shop and location for EasyOrders imports.
+	 *
+	 * Strategy:
+	 *  - Prefer exact match on city + area.
+	 *  - Fallback to:
+	 *      - same area, or
+	 *      - same city with null area (generic for city).
+	 */
+	private function resolveDeliveryPriceForShopAndLocation(int $shopId, ?int $cityId, ?int $areaId): ?DeliveryPrice
+	{
+		$baseQuery = DeliveryPrice::query()->where('shop_id', $shopId);
+
+		// 1. Exact city + area match
+		if ($cityId && $areaId) {
+			$exact = (clone $baseQuery)
+				->where('city_id', $cityId)
+				->where('area_id', $areaId)
+				->first();
+
+			if ($exact) {
+				return $exact;
+			}
+		}
+
+		// 2. Fallbacks: same area or same city with null area
+		if ($cityId || $areaId) {
+			$fallback = $baseQuery
+				->where(function ($q) use ($cityId, $areaId) {
+					if ($areaId) {
+						$q->where('area_id', $areaId);
+					}
+
+					if ($cityId) {
+						$q->orWhere(function ($q2) use ($cityId) {
+							$q2->where('city_id', $cityId)->whereNull('area_id');
+						});
+					}
+				})
+				->orderBy('area_id', 'desc')
+				->first();
+
+			if ($fallback) {
+				return $fallback;
+			}
+		}
+
+		return null;
 	}
 }
 
