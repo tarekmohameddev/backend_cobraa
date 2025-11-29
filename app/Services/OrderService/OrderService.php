@@ -205,7 +205,7 @@ class OrderService extends CoreService
 
                 }
 
-                $order = (new OrderDetailService)->update($order, data_get($data, 'products', []));
+                $order = (new OrderDetailService)->create($order, data_get($data, 'products', []));
 
                 $this->calculateOrder($order, $data, true);
 
