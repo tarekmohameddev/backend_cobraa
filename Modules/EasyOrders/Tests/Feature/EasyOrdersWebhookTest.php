@@ -72,12 +72,10 @@ class EasyOrdersWebhookTest extends TestCase
 		$order = Order::query()->first();
 		$this->assertNotNull($order);
 
-		// Assert nested address JSON: {"address": {"address": "..."}}
+		// Assert flat address JSON: {"address": "...", "region_id": ..., "country_id": ..., "city_id": null, "area_id": null}
 		$address = $order->address;
 		$this->assertIsArray($address);
-		$this->assertArrayHasKey('address', $address);
-		$this->assertIsArray($address['address']);
-		$this->assertSame("Line 1\nLine 2", $address['address']['address'] ?? null);
+		$this->assertSame("Line 1\nLine 2", $address['address'] ?? null);
 
 		// Assert a UserAddress was created and linked via address_id
 		$this->assertNotNull($order->address_id);

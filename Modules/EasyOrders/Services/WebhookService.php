@@ -240,37 +240,7 @@ class WebhookService
 			],
 			'status' => Arr::get($payload, 'status'),
 			'metadata' => Arr::get($payload, 'metadata', []),
-			'items' => array_map(function ($item) {
-				$product = Arr::get($item, 'product', []);
-				$variant = Arr::get($item, 'variant', []);
-				return [
-					'external_item_id' => Arr::get($item, 'id'),
-					'price' => Arr::get($item, 'price'),
-					'quantity' => Arr::get($item, 'quantity'),
-					'product' => [
-						'external_id' => Arr::get($product, 'id'),
-						'name' => Arr::get($product, 'name'),
-						'sku' => Arr::get($product, 'sku'),
-						'slug' => Arr::get($product, 'slug'),
-						'thumb' => Arr::get($product, 'thumb'),
-						'images' => Arr::get($product, 'images', []),
-					],
-					'variant' => [
-						'external_id' => Arr::get($variant, 'id'),
-						'variant_sku' => Arr::get($variant, 'taager_code'),
-						'variation_props' => Arr::get($variant, 'variation_props', []),
-					],
-					'resolved' => [
-						'internal_product_id' => null,
-						'internal_variant_id' => null,
-						'price_policy' => [
-							'external_price' => Arr::get($item, 'price'),
-							'internal_price' => null,
-							'mismatch' => false,
-						],
-					],
-				];
-			}, $cartItems),
+			'items' => $this->normalizeCartItems($cartItems),
 		];
 
 		return [
@@ -282,6 +252,100 @@ class WebhookService
 			'expense' => $expense,
 			'coupon_discount' => $couponDiscount,
 		];
+	}
+
+	/**
+	 * Normalize EasyOrders cart items into our internal structure.
+	 *
+	 * This method also supports composite SKUs where a single SKU encodes
+	 * multiple products joined by "+", for example:
+	 *   "Forev-Q1S+Forev-w502+OP1-headphone"
+	 *
+	 * Behaviour for composite SKUs:
+	 * - Each part becomes its own normalized item.
+	 * - Each split item keeps the same quantity as the original cart line.
+	 * - External per-item price is ignored: we set the external price used
+	 *   for price-policy checks to null so that internal catalog prices drive
+	 *   the final order amounts.
+	 */
+	private function normalizeCartItems(array $cartItems): array
+	{
+		$normalizedItems = [];
+
+		foreach ($cartItems as $item) {
+			$product = Arr::get($item, 'product', []);
+			$variant = Arr::get($item, 'variant', []);
+
+			$base = [
+				'external_item_id' => Arr::get($item, 'id'),
+				'price' => Arr::get($item, 'price'),
+				'quantity' => Arr::get($item, 'quantity'),
+				'product' => [
+					'external_id' => Arr::get($product, 'id'),
+					'name' => Arr::get($product, 'name'),
+					'sku' => Arr::get($product, 'sku'),
+					'slug' => Arr::get($product, 'slug'),
+					'thumb' => Arr::get($product, 'thumb'),
+					'images' => Arr::get($product, 'images', []),
+				],
+				'variant' => [
+					'external_id' => Arr::get($variant, 'id'),
+					'variant_sku' => Arr::get($variant, 'taager_code'),
+					'variation_props' => Arr::get($variant, 'variation_props', []),
+				],
+				'resolved' => [
+					'internal_product_id' => null,
+					'internal_variant_id' => null,
+					'price_policy' => [
+						'external_price' => Arr::get($item, 'price'),
+						'internal_price' => null,
+						'mismatch' => false,
+					],
+				],
+			];
+
+			$variantSku = Arr::get($variant, 'taager_code');
+			$productSku = Arr::get($product, 'sku');
+			$sourceSku = $variantSku ?: $productSku;
+
+			if (is_string($sourceSku) && str_contains($sourceSku, '+')) {
+				$parts = array_filter(array_map('trim', explode('+', $sourceSku)), static fn ($part) => $part !== '');
+
+				if (empty($parts)) {
+					$normalizedItems[] = $base;
+					continue;
+				}
+
+				$index = 1;
+				foreach ($parts as $part) {
+					$splitItem = $base;
+
+					// Help debugging by making external_item_id unique per split part when possible.
+					if ($splitItem['external_item_id'] !== null) {
+						$splitItem['external_item_id'] = (string) $splitItem['external_item_id'] . '-' . $index;
+					}
+
+					if ($variantSku) {
+						$splitItem['variant']['variant_sku'] = $part;
+					} else {
+						$splitItem['product']['sku'] = $part;
+					}
+
+					// For composite SKUs, ignore external per-item price and rely on internal catalog prices.
+					$splitItem['price'] = null;
+					$splitItem['resolved']['price_policy']['external_price'] = null;
+
+					$normalizedItems[] = $splitItem;
+					$index++;
+				}
+
+				continue;
+			}
+
+			$normalizedItems[] = $base;
+		}
+
+		return $normalizedItems;
 	}
 }
 

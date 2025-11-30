@@ -66,7 +66,14 @@ class ValidationService
 				// Price policy check (simple)
 				$internalPrice = (float) $stock->total_price;
 				$resolved['price_policy']['internal_price'] = $internalPrice;
-				$resolved['price_policy']['mismatch'] = round((float)$resolved['price_policy']['external_price'], 2) !== round($internalPrice, 2);
+
+				// When external_price is null, we skip mismatch checks and rely purely on internal pricing.
+				$externalPrice = $resolved['price_policy']['external_price'] ?? null;
+				if ($externalPrice !== null) {
+					$resolved['price_policy']['mismatch'] = round((float) $externalPrice, 2) !== round($internalPrice, 2);
+				} else {
+					$resolved['price_policy']['mismatch'] = false;
+				}
 			}
 
 			// Attach resolution to normalized
