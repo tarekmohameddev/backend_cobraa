@@ -191,6 +191,53 @@ class OrderLocationController extends Controller
     }
 
     /**
+     * Apply a manual discount to an order.
+     *
+     * @param int $id
+     * @param \Modules\UserManagement\Http\Requests\UpdateOrderDiscountRequest $request
+     * @return JsonResponse
+     */
+    public function updateDiscount(int $id, \Modules\UserManagement\Http\Requests\UpdateOrderDiscountRequest $request): JsonResponse
+    {
+        /** @var Order $order */
+        $order = Order::find($id);
+
+        if (!$order) {
+            return $this->errorResponse(ResponseError::ERROR_404, 'Order not found');
+        }
+
+        $validated = $request->validated();
+        $discountAmount = $validated['discount'];
+
+        // Calculate new totals
+        $newTotalDiscount = $order->total_discount + $discountAmount;
+        $newTotalPrice = max($order->total_price - $discountAmount, 0);
+
+        // Prepare update data
+        $updateData = [
+            'total_discount' => $newTotalDiscount,
+            'total_price' => $newTotalPrice,
+        ];
+
+        // Optionally store the reason in order notes
+        if (!empty($validated['reason'])) {
+            $updateData['note'] = ($order->note ? $order->note . "\n" : '') . 
+                                  "Discount applied: {$discountAmount} - Reason: {$validated['reason']}";
+        }
+
+        // Update the order directly
+        $order->update($updateData);
+
+        // Refresh order with relationships for response
+        $order = Order::with(['user', 'shop', 'orderDetails', 'transaction', 'myAddress', 'deliveryPrice'])->find($id);
+
+        return $this->successResponse(
+            __('errors.' . ResponseError::RECORD_WAS_SUCCESSFULLY_UPDATED, locale: request('lang')),
+            OrderResource::make($order)
+        );
+    }
+
+    /**
      * Success Response
      */
     private function successResponse($message, $data): JsonResponse

@@ -32,5 +32,8 @@ Route::group(['prefix' => 'v1/dashboard/admin/user-management', 'middleware' => 
     // Order Location & Shipping Update
     Route::get('/orders/{id}', [OrderLocationController::class, 'show']);
     Route::put('/orders/{id}/location', [OrderLocationController::class, 'updateLocation']);
+    
+    // Order Discount Update
+    Route::put('/orders/{id}/discount', [OrderLocationController::class, 'updateDiscount']);
 
 });
