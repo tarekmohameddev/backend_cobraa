@@ -33,7 +33,7 @@ class StoxOrderController extends Controller
 
         return $this->successResponse(
             __('errors.' . ResponseError::NO_ERROR),
-            StoxOrderResource::collection($orders)
+            StoxOrderResource::collection($orders)->response()->getData(true)
         );
     }
 

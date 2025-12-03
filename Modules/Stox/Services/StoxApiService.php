@@ -44,6 +44,18 @@ class StoxApiService
     }
 
     /**
+     * Fetch products from Stox with pagination.
+     *
+     * @param StoxAccount $account
+     * @param int $page
+     * @return array{success: bool, status: int|null, data: array|null, error: string|null}
+     */
+    public function fetchProducts(StoxAccount $account, int $page = 1): array
+    {
+        return $this->performRequest($account, "products", ['page' => $page], 'get');
+    }
+
+    /**
      * @param array<string, mixed> $payload
      * @return array{success: bool, status: int|null, data: array|null, error: string|null}
      */

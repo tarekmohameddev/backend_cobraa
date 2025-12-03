@@ -26,6 +26,8 @@ Route::prefix('v1')
 
             Route::get('operation-logs', [StoxOperationLogController::class, 'index']);
             Route::get('operation-logs/export', [StoxOperationLogController::class, 'export']);
+
+            Route::get('products/check-discrepancies', [\Modules\Stox\Http\Controllers\Dashboard\Admin\StoxProductSyncController::class, 'checkDiscrepancies']);
         });
     });
 
