@@ -796,7 +796,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['block.ip']], function () {
             Route::get('order/products/calculate',       [Admin\OrderReportController::class, 'orderStocksCalculate']);
             Route::post('order/{id}/deliveryman',        [Admin\OrderController::class, 'orderDeliverymanUpdate']);
             Route::post('order/{id}/status',             [Admin\OrderController::class, 'orderStatusUpdate']);
-            Route::apiResource('orders',       Admin\OrderController::class);
+            Route::apiResource('orders',       Admin\OrderController::class)->middleware('order.lock');
             Route::delete('orders/delete',               [Admin\OrderController::class, 'destroy']);
             Route::get('orders/drop/all',                [Admin\OrderController::class, 'dropAll']);
             Route::get('user-orders/{id}',               [Admin\OrderController::class, 'userOrder']);

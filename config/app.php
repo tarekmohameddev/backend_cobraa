@@ -218,6 +218,11 @@ return [
         App\Providers\RouteServiceProvider::class,
 //        App\Providers\TelescopeServiceProvider::class,
         App\Providers\RepositoryProvider::class,
+        
+        /*
+         * Module Service Providers...
+         */
+        Modules\OrderLocking\Providers\OrderLockingServiceProvider::class,
 
     ],
 

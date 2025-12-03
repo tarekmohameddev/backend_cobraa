@@ -1,0 +1,17 @@
+{
+    "name": "OrderLocking",
+    "alias": "orderlocking",
+    "description": "Order locking mechanism to prevent concurrent editing by multiple managers",
+    "keywords": [
+        "order",
+        "locking",
+        "concurrency"
+    ],
+    "priority": 0,
+    "providers": [
+        "Modules\\OrderLocking\\Providers\\OrderLockingServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}
