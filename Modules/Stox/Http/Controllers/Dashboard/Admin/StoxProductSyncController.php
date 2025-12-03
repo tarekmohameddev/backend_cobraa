@@ -18,11 +18,13 @@ class StoxProductSyncController extends Controller
     {
     }
 
-    public function checkDiscrepancies(Request $request, StoxAccount $account): StreamedResponse
+    public function checkDiscrepancies(Request $request, int $stoxAccount): StreamedResponse
     {
         // Increase memory limit and execution time for large datasets
         ini_set('memory_limit', '512M');
         ini_set('max_execution_time', '300');
+
+        $account = StoxAccount::findOrFail($stoxAccount);
 
         $response = new StreamedResponse(function () use ($account) {
             $handle = fopen('php://output', 'w');

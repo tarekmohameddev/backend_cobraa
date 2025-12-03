@@ -52,7 +52,7 @@ class StoxApiService
      */
     public function fetchProducts(StoxAccount $account, int $page = 1): array
     {
-        return $this->performRequest($account, "products", ['page' => $page], 'get');
+        return $this->performRequest($account, "products?page={$page}", [], 'get');
     }
 
     /**
