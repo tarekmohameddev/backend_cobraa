@@ -34,10 +34,19 @@ class StoxProductSyncController extends Controller
 
             fputcsv($handle, ['SKU', 'Status', 'Product Name (Stox)', 'Product Name (Local)']);
 
+            // Helper to normalize SKU
+            $normalizeSku = function ($sku) {
+                // Remove non-printable characters, non-breaking spaces, and trim
+                // \xC2\xA0 is UTF-8 for non-breaking space
+                $sku = preg_replace('/[\x00-\x1F\x7F]|\xC2\xA0/', '', (string)$sku);
+                return strtolower(trim($sku));
+            };
+
             // 1. Fetch all Stox SKUs
             $stoxSkus = [];
             $page = 1;
             $hasMore = true;
+            $previousPageFirstSku = null;
 
             while ($hasMore) {
                 // Safety break
@@ -52,33 +61,61 @@ class StoxProductSyncController extends Controller
                     break;
                 }
 
-                $meta = $result['data']['meta'] ?? [];
-                $currentPage = $meta['current_page'] ?? 0;
-                $lastPage = $meta['last_page'] ?? 0;
+                $responseData = $result['data'];
+                $items = $responseData['data'];
 
-                // Verify we got the page we asked for
-                if ($currentPage != $page) {
-                    // API ignored our page parameter or returned wrong page
+                // Check for infinite loop (API ignoring page param)
+                // We compare the first item's ID or SKU of this page with the previous page
+                $firstItem = $items[0] ?? [];
+                $firstIdentifier = $firstItem['id'] ?? $firstItem['sku'] ?? null;
+
+                if ($page > 1 && $firstIdentifier === $previousPageFirstSku) {
+                    // We received the exact same first item as the previous page. 
+                    // Assume the API is ignoring the ?page= parameter.
                     $hasMore = false;
                     break;
                 }
+                $previousPageFirstSku = $firstIdentifier;
 
-                foreach ($result['data']['data'] as $item) {
-                    $sku = trim((string) ($item['sku'] ?? ''));
-                    if ($sku !== '') {
-                        $stoxSkus[$sku] = $item['name'] ?? '';
+                foreach ($items as $item) {
+                    $originalSku = trim((string) ($item['sku'] ?? ''));
+                    if ($originalSku !== '') {
+                        $key = $normalizeSku($originalSku);
+                        $stoxSkus[$key] = [
+                            'original' => $originalSku,
+                            'name' => $item['name'] ?? ''
+                        ];
                     }
                 }
 
-                if ($currentPage >= $lastPage) {
-                    $hasMore = false;
+                // Determine if there are more pages
+                // Check for 'meta' key or look at root
+                $meta = $responseData['meta'] ?? $responseData;
+                $currentPage = $meta['current_page'] ?? null;
+                $lastPage = $meta['last_page'] ?? null;
+
+                if ($lastPage !== null) {
+                    // We have explicit pagination info
+                    if ($page >= $lastPage) {
+                        $hasMore = false;
+                    } else {
+                        $page++;
+                    }
+                    
+                    // If the API says current_page is X, but we asked for Y, and X != Y
+                    // strict checking here caused issues before. We rely on the loop counter 
+                    // and the duplicate check above instead.
                 } else {
+                    // No explicit last_page info. 
+                    // Since we got data (checked above), we assume there might be more.
                     $page++;
                 }
             }
 
-            // Track matched Stox SKUs to identify "Stox Only" later
-            $matchedStoxSkus = [];
+            // Track matched Stox SKUs (keys)
+            $matchedStoxKeys = [];
+            // Track seen local SKUs to avoid duplicates in the report
+            $seenLocalKeys = [];
 
             // 2. Fetch all Local SKUs
             Stock::query()
@@ -86,7 +123,7 @@ class StoxProductSyncController extends Controller
                 ->select(['id', 'sku', 'product_id'])
                 ->whereNotNull('sku')
                 ->where('sku', '!=', '')
-                ->chunk(1000, function ($stocks) use ($handle, $stoxSkus, &$matchedStoxSkus) {
+                ->chunk(1000, function ($stocks) use ($handle, $stoxSkus, &$matchedStoxKeys, &$seenLocalKeys, $normalizeSku) {
                     foreach ($stocks as $stock) {
                         $localSku = trim((string) $stock->sku);
                         
@@ -94,28 +131,34 @@ class StoxProductSyncController extends Controller
                             continue;
                         }
 
-                        if (isset($stoxSkus[$localSku])) {
+                        $key = $normalizeSku($localSku);
+
+                        if (isset($stoxSkus[$key])) {
                             // Exists in both - mark as matched
-                            $matchedStoxSkus[$localSku] = true;
+                            $matchedStoxKeys[$key] = true;
                         } else {
                             // Exists in Local but not in Stox
-                            fputcsv($handle, [
-                                $localSku,
-                                'Local Only',
-                                '',
-                                $stock->product?->translation?->title ?? $stock->product?->uuid ?? 'Unknown Product'
-                            ]);
+                            // Only report if we haven't seen this SKU before
+                            if (!isset($seenLocalKeys[$key])) {
+                                fputcsv($handle, [
+                                    $localSku,
+                                    'Local Only',
+                                    '',
+                                    $stock->product?->translation?->title ?? $stock->product?->uuid ?? 'Unknown Product'
+                                ]);
+                                $seenLocalKeys[$key] = true;
+                            }
                         }
                     }
                 });
 
             // 3. Identify Stox Only SKUs
-            foreach ($stoxSkus as $sku => $name) {
-                if (!isset($matchedStoxSkus[$sku])) {
+            foreach ($stoxSkus as $key => $data) {
+                if (!isset($matchedStoxKeys[$key])) {
                     fputcsv($handle, [
-                        $sku,
+                        $data['original'],
                         'Stox Only',
-                        $name,
+                        $data['name'],
                         ''
                     ]);
                 }
