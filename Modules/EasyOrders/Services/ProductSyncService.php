@@ -45,8 +45,12 @@ class ProductSyncService
 
 	/**
 	 * Sync all products starting from a given page.
+	 * 
+	 * @param int $page Starting page number
+	 * @param EasyOrdersProductSync|null $syncRecord Sync status record to update
+	 * @param callable|null $touchCallback Optional callback to touch the job (prevents timeout)
 	 */
-	public function syncAll(int $page = 1, ?EasyOrdersProductSync $syncRecord = null): void
+	public function syncAll(int $page = 1, ?EasyOrdersProductSync $syncRecord = null, ?callable $touchCallback = null): void
 	{
 		$store = $this->getActiveStore();
 		$currentPage = $page;
@@ -95,6 +99,16 @@ class ProductSyncService
 			// Update progress after each page
 			if ($syncRecord) {
 				$syncRecord->updateProgress($currentPage, $totalPages, $productsSynced, $productsFailed);
+			}
+
+			// Touch the job to prevent timeout (if running in queue)
+			// This keeps the job "alive" in the queue system
+			if ($touchCallback) {
+				try {
+					$touchCallback();
+				} catch (\Throwable) {
+					// Ignore if touch fails
+				}
 			}
 
 			$currentPage++;

@@ -20,12 +20,27 @@ class SyncProductsJob implements ShouldQueue
 	/**
 	 * The number of times the job may be attempted.
 	 */
-	public int $tries = 3;
+	public int $tries = 1; // Set to 1 to prevent retries on timeout
 
 	/**
 	 * The number of seconds to wait before retrying the job.
 	 */
 	public int $backoff = 60;
+
+	/**
+	 * The number of seconds the job can run before timing out.
+	 * Set to a high value for long-running syncs (8 hours = 28800 seconds).
+	 */
+	public int $timeout = 28800; // 8 hours - allow long-running syncs
+
+	/**
+	 * Get the number of seconds to wait before retrying the job.
+	 * This prevents the job from being considered "stuck" during long operations.
+	 */
+	public function retryAfter(): int
+	{
+		return 3600; // 1 hour - allow job to run for up to 1 hour before considering it stuck
+	}
 
 	/**
 	 * Create a new job instance.
@@ -58,7 +73,12 @@ class SyncProductsJob implements ShouldQueue
 		]);
 
 		try {
-			$service->syncAll($this->page, $syncRecord);
+			// Pass a callback to touch the job periodically to prevent timeout
+			$touchCallback = function () {
+				$this->job?->touch();
+			};
+
+			$service->syncAll($this->page, $syncRecord, $touchCallback);
 
 			Log::info('EasyOrders product sync completed', [
 				'page' => $this->page,
