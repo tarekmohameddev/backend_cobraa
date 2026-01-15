@@ -317,6 +317,11 @@ class ProductSyncService
 		$normalizedKeywords = preg_replace('/\s+/', ' ', $rawKeywords);
 		$normalizedKeywords = Str::limit((string) $normalizedKeywords, 191, '');
 
+		// Product title length is limited by product_translations.title (191 chars).
+		$rawTitle = (string) Arr::get($eoProduct, 'name', '');
+		$normalizedTitle = trim((string) preg_replace('/\s+/', ' ', $rawTitle));
+		$normalizedTitle = Str::limit($normalizedTitle, 191, '');
+
 		$data = [
 			'shop_id'     => $shopId,
 			'category_id' => $categoryId,
@@ -326,7 +331,7 @@ class ProductSyncService
 			'keywords'    => $normalizedKeywords,
 
 			'title' => [
-				$defaultLocale => (string) Arr::get($eoProduct, 'name', ''),
+				$defaultLocale => $normalizedTitle,
 			],
 			'description' => [
 				$defaultLocale => (string) Arr::get($eoProduct, 'description', ''),
