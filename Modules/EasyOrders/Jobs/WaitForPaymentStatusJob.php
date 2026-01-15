@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Modules\EasyOrders\Entities\EasyOrdersTempOrder;
 use Modules\EasyOrders\Services\WebhookService;
+use Modules\EasyOrders\Jobs\ValidateTempOrderJob;
 
 class WaitForPaymentStatusJob implements ShouldQueue
 {
@@ -53,20 +54,37 @@ class WaitForPaymentStatusJob implements ShouldQueue
 			: ($temp->created_at ? CarbonImmutable::parse($temp->created_at)->addMinutes($timeoutMinutes) : $now->addMinutes($timeoutMinutes));
 
 		if ($now->greaterThan($deadline)) {
-			DB::transaction(function () use ($temp, $timeoutMinutes) {
-				$temp->status = 'import_failed';
-				$reason = 'Payment status timeout after '.$timeoutMinutes.' minutes';
-				$temp->failure_reason = $temp->failure_reason
-					? $temp->failure_reason.'; '.$reason
-					: $reason;
+			// On timeout, import the order as unpaid instead of marking as import_failed
+			// Update payload and normalized data to reflect unpaid status
+			$payload = $temp->payload ?? [];
+			$normalized = $temp->normalized ?? [];
+			
+			// Mark the order as having payment timeout in normalized metadata
+			$normalized['metadata'] = $normalized['metadata'] ?? [];
+			$normalized['metadata']['payment_timeout'] = true;
+			$normalized['metadata']['payment_timeout_minutes'] = $timeoutMinutes;
+			
+			// Set status to pending_payment to indicate unpaid
+			$payload['status'] = 'pending_payment';
+			$normalized['status'] = 'pending_payment';
+
+			DB::transaction(function () use ($temp, $payload, $normalized) {
+				$temp->status = 'pending';
+				$temp->failure_reason = null;
+				$temp->payload = $payload;
+				$temp->normalized = $normalized;
+				$temp->payment_poll_deadline_at = null;
 				$temp->save();
 			});
 
-			Log::info('EasyOrders wait-payment: timeout reached, marking import_failed', [
+			Log::info('EasyOrders wait-payment: timeout reached, importing as unpaid', [
 				'temp_order_id' => $temp->id,
 				'external_order_id' => $temp->external_order_id,
+				'timeout_minutes' => $timeoutMinutes,
 			]);
 
+			// Dispatch validation job to proceed with normal import flow
+			ValidateTempOrderJob::dispatch($temp->id)->onQueue('default');
 			return;
 		}
 

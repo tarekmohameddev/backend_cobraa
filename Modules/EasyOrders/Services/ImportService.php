@@ -18,6 +18,8 @@ use App\Models\User;
 use App\Models\Order as OrderModel;
 use App\Services\TransactionService\TransactionService;
 use App\Models\DeliveryPrice;
+use Modules\OrderEnhancements\Services\OrderUpdateService;
+use Illuminate\Support\Arr;
 
 class ImportService
 {
@@ -40,6 +42,10 @@ class ImportService
 			$items           = (array) ($normalized['items'] ?? []);
 			$paymentMethod   = (string) ($temp->payment_method ?? data_get($normalized, 'payment_method', ''));
 			$externalStatus  = (string) data_get($temp->payload ?? [], 'status', data_get($normalized, 'status', ''));
+			
+			// Check if this order had a payment timeout
+			$paymentTimeout = (bool) Arr::get($normalized, 'metadata.payment_timeout', false);
+			$timeoutMinutes = (int) Arr::get($normalized, 'metadata.payment_timeout_minutes', 30);
 
 			// Ensure customer exists
 			$customerName = $temp->customer_name ?: data_get($normalized, 'customer.full_name');
@@ -275,6 +281,9 @@ class ImportService
 						$txStatus = Transaction::STATUS_PAID;
 					} elseif ($externalStatus === 'paid_failed') {
 						$txStatus = Transaction::STATUS_PROGRESS;
+					} elseif ($paymentTimeout) {
+						// Payment timeout: treat as unpaid
+						$txStatus = Transaction::STATUS_PROGRESS;
 					}
 				}
 
@@ -307,6 +316,39 @@ class ImportService
 						$orderModel->update([
 							'note' => trim($currentNote . (empty($currentNote) ? '' : ' ') . $failedNote),
 						]);
+					}
+					
+					// For payment timeout, add an internal order update note
+					if ($paymentTimeout) {
+						// Find an admin user or use the order's user for the note
+						$noteUser = User::whereHas('roles', fn($q) => $q->where('name', 'admin'))->first();
+						if (!$noteUser && $orderModel->user_id) {
+							$noteUser = User::find($orderModel->user_id);
+						}
+						
+						if ($noteUser) {
+							$timeoutNote = "Customer attempted to pay online via EasyOrders. The system waited {$timeoutMinutes} minutes for payment completion, but the payment was not completed. Therefore, the order was imported as unpaid.";
+							
+							try {
+								(new OrderUpdateService)->create($orderModel, $noteUser, [
+									'update_type' => 'note',
+									'content' => $timeoutNote,
+									'is_internal' => true,
+									'metadata' => [
+										'source' => 'easyorders',
+										'payment_timeout' => true,
+										'timeout_minutes' => $timeoutMinutes,
+									],
+								]);
+							} catch (\Throwable $e) {
+								// Log error but don't fail the import
+								\Log::warning('EasyOrders: Failed to create order update note for payment timeout', [
+									'order_id' => $orderModel->id,
+									'temp_order_id' => $temp->id,
+									'error' => $e->getMessage(),
+								]);
+							}
+						}
 					}
 				}
 
