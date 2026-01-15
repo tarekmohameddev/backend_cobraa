@@ -11,36 +11,15 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Modules\EasyOrders\Entities\EasyOrdersProductSync;
+use Modules\EasyOrders\Jobs\SyncOneProductJob;
 use Modules\EasyOrders\Services\ProductSyncService;
 
 class SyncProductsJob implements ShouldQueue
 {
 	use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-	/**
-	 * The number of times the job may be attempted.
-	 */
-	public int $tries = 1; // Set to 1 to prevent retries on timeout
-
-	/**
-	 * The number of seconds to wait before retrying the job.
-	 */
-	public int $backoff = 60;
-
-	/**
-	 * The number of seconds the job can run before timing out.
-	 * Set to a high value for long-running syncs (8 hours = 28800 seconds).
-	 */
-	public int $timeout = 28800; // 8 hours - allow long-running syncs
-
-	/**
-	 * Get the number of seconds to wait before retrying the job.
-	 * This prevents the job from being considered "stuck" during long operations.
-	 */
-	public function retryAfter(): int
-	{
-		return 3600; // 1 hour - allow job to run for up to 1 hour before considering it stuck
-	}
+	public int $tries = 1;
+	public int $timeout = 60; // keep this job short
 
 	/**
 	 * Create a new job instance.
@@ -58,13 +37,18 @@ class SyncProductsJob implements ShouldQueue
 	 */
 	public function handle(ProductSyncService $service): void
 	{
-		// Increase execution time and memory limit for long-running sync
-		ini_set('max_execution_time', '0');
-		ini_set('memory_limit', '512M');
-
 		$syncRecord = $this->syncId 
 			? EasyOrdersProductSync::find($this->syncId)
 			: null;
+
+		if (!$syncRecord) {
+			return;
+		}
+
+		// Mark started once
+		if ($syncRecord->status === EasyOrdersProductSync::STATUS_PENDING) {
+			$syncRecord->markAsStarted();
+		}
 
 		Log::info('EasyOrders product sync started', [
 			'page' => $this->page,
@@ -73,18 +57,46 @@ class SyncProductsJob implements ShouldQueue
 		]);
 
 		try {
-			// Pass a callback to touch the job periodically to prevent timeout
-			$touchCallback = function () {
-				$this->job?->touch();
-			};
+			$result = $service->listExternalProductIds($this->page);
+			$ids = $result['ids'] ?? [];
+			$totalPages = $result['total_pages'] ?? null;
 
-			$service->syncAll($this->page, $syncRecord, $touchCallback);
+			// Update progress and metadata
+			$metadata = $syncRecord->metadata ?? [];
+			$metadata['current_page'] = $this->page;
+			if ($totalPages) {
+				$metadata['total_pages'] = (int) $totalPages;
+				$syncRecord->total_pages = (int) $totalPages;
+			}
 
-			Log::info('EasyOrders product sync completed', [
-				'page' => $this->page,
-				'user_id' => $this->userId,
-				'sync_id' => $this->syncId,
-			]);
+			// If no ids returned, we're done dispatching.
+			if (empty($ids)) {
+				$metadata['dispatch_done'] = true;
+				$syncRecord->metadata = $metadata;
+				$syncRecord->current_page = $this->page;
+				$syncRecord->save();
+
+				$queued = (int) data_get($metadata, 'queued_products', 0);
+				$processed = (int) $syncRecord->products_synced + (int) $syncRecord->products_failed;
+				if ($queued > 0 && $processed >= $queued) {
+					$syncRecord->markAsCompleted();
+				}
+
+				return;
+			}
+
+			// Dispatch per-product jobs
+			foreach ($ids as $externalId) {
+				SyncOneProductJob::dispatch((string) $externalId, (int) $syncRecord->id)->onQueue('default');
+			}
+
+			$metadata['queued_products'] = (int) data_get($metadata, 'queued_products', 0) + count($ids);
+			$syncRecord->metadata = $metadata;
+			$syncRecord->current_page = $this->page;
+			$syncRecord->save();
+
+			// Dispatch next page dispatcher
+			static::dispatch($this->page + 1, $this->userId, $this->syncId)->onQueue('default');
 		} catch (\Throwable $e) {
 			$errorMessage = $e->getMessage();
 			

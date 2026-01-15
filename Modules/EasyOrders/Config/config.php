@@ -23,6 +23,14 @@ return [
 	// EasyOrders public API rate limit (requests per minute)
 	'rate_limit_per_minute' => (int) env('EASYORDERS_RATE_LIMIT_PER_MINUTE', 40),
 
+	// Product sync safety/limits
+	// Max pages to scan during product list sync (prevents infinite loops).
+	'max_product_list_pages' => (int) env('EASYORDERS_MAX_PRODUCT_LIST_PAGES', 500),
+
+	// Image download settings (to keep jobs short and reliable).
+	'product_image_download_timeout_seconds' => (int) env('EASYORDERS_PRODUCT_IMAGE_DOWNLOAD_TIMEOUT_SECONDS', 10),
+	'max_images_per_product' => (int) env('EASYORDERS_MAX_IMAGES_PER_PRODUCT', 3),
+
 	// Optional: slug of a root category under which auto-created EasyOrders
 	// categories will be nested. When null, categories are created at top level.
 	'root_category_slug' => env('EASYORDERS_ROOT_CATEGORY_SLUG', null),

@@ -67,9 +67,16 @@ class ProductSyncController extends Controller
 			], 404);
 		}
 
-		// Calculate progress percentage if we have total pages
+		$metadata = $syncRecord->metadata ?? [];
+		$queuedProducts = (int) data_get($metadata, 'queued_products', 0);
+		$dispatchDone = (bool) data_get($metadata, 'dispatch_done', false);
+		$processedProducts = (int) $syncRecord->products_synced + (int) $syncRecord->products_failed;
+
+		// Progress is based on products when available (more accurate than page-based)
 		$progress = null;
-		if ($syncRecord->total_pages && $syncRecord->current_page) {
+		if ($queuedProducts > 0) {
+			$progress = min(100, (int) (($processedProducts / $queuedProducts) * 100));
+		} elseif ($syncRecord->total_pages && $syncRecord->current_page) {
 			$progress = min(100, (int) (($syncRecord->current_page / $syncRecord->total_pages) * 100));
 		}
 
@@ -81,6 +88,9 @@ class ProductSyncController extends Controller
 			'total_pages' => $syncRecord->total_pages,
 			'products_synced' => $syncRecord->products_synced,
 			'products_failed' => $syncRecord->products_failed,
+			'queued_products' => $queuedProducts,
+			'processed_products' => $processedProducts,
+			'dispatch_done' => $dispatchDone,
 			'progress' => $progress,
 			'error_message' => $syncRecord->error_message,
 			'started_at' => $syncRecord->started_at?->toIso8601String(),

@@ -44,80 +44,38 @@ class ProductSyncService
 	private float $windowStartedAt = 0.0;
 
 	/**
-	 * Sync all products starting from a given page.
-	 * 
-	 * @param int $page Starting page number
-	 * @param EasyOrdersProductSync|null $syncRecord Sync status record to update
-	 * @param callable|null $touchCallback Optional callback to touch the job (prevents timeout)
+	 * List external product ids for a given page.
+	 *
+	 * This is intentionally lightweight so it can run inside short queue jobs.
+	 *
+	 * @return array{ids: array<int, string>, total_pages: int|null}
 	 */
-	public function syncAll(int $page = 1, ?EasyOrdersProductSync $syncRecord = null, ?callable $touchCallback = null): void
+	public function listExternalProductIds(int $page = 1): array
 	{
+		$maxPages = (int) Config::get('easyorders.max_product_list_pages', 500);
+		if ($page < 1 || $page > $maxPages) {
+			abort(400, 'Invalid page for EasyOrders product sync.');
+		}
+
 		$store = $this->getActiveStore();
-		$currentPage = $page;
-		$productsSynced = 0;
-		$productsFailed = 0;
+		$list = $this->fetchProductList($store, $page);
+		$items = $this->extractProductsFromListResponse($list);
 
-		if ($syncRecord) {
-			$syncRecord->markAsStarted();
+		$ids = [];
+		foreach ($items as $item) {
+			$externalId = (string) Arr::get($item, 'id');
+			if ($externalId !== '') {
+				$ids[] = $externalId;
+			}
 		}
 
-		do {
-			$list = $this->fetchProductList($store, $currentPage);
-			$items = $this->extractProductsFromListResponse($list);
+		$totalPages = Arr::get($list, 'last_page') ?? Arr::get($list, 'meta.last_page') ?? null;
+		$totalPages = is_numeric($totalPages) ? (int) $totalPages : null;
 
-			if (empty($items)) {
-				break;
-			}
-
-			// Try to get total pages from response if available
-			$totalPages = Arr::get($list, 'last_page') ?? Arr::get($list, 'meta.last_page') ?? null;
-
-			foreach ($items as $item) {
-				$externalId = (string) Arr::get($item, 'id');
-				if (!$externalId) {
-					continue;
-				}
-
-				try {
-					$this->syncOne($externalId);
-					$productsSynced++;
-				} catch (\Throwable $e) {
-					$productsFailed++;
-					Log::warning('EasyOrders product sync failed for product', [
-						'external_id' => $externalId,
-						'error' => $e->getMessage(),
-					]);
-					// Continue with next product
-				}
-
-				// Update progress every 10 products
-				if ($syncRecord && ($productsSynced + $productsFailed) % 10 === 0) {
-					$syncRecord->updateProgress($currentPage, $totalPages, $productsSynced, $productsFailed);
-				}
-			}
-
-			// Update progress after each page
-			if ($syncRecord) {
-				$syncRecord->updateProgress($currentPage, $totalPages, $productsSynced, $productsFailed);
-			}
-
-			// Touch the job to prevent timeout (if running in queue)
-			// This keeps the job "alive" in the queue system
-			if ($touchCallback) {
-				try {
-					$touchCallback();
-				} catch (\Throwable) {
-					// Ignore if touch fails
-				}
-			}
-
-			$currentPage++;
-		} while (true);
-
-		if ($syncRecord) {
-			$syncRecord->updateProgress($currentPage - 1, null, $productsSynced, $productsFailed);
-			$syncRecord->markAsCompleted();
-		}
+		return [
+			'ids' => $ids,
+			'total_pages' => $totalPages,
+		];
 	}
 
 	/**
@@ -252,6 +210,9 @@ class ProductSyncService
 			return [];
 		}
 
+		$timeoutSeconds = (int) Config::get('easyorders.product_image_download_timeout_seconds', 10);
+		$timeoutSeconds = max(1, $timeoutSeconds);
+
 		$stored = [];
 		$isAws = Settings::where('key', 'aws')->first()?->value;
 
@@ -262,7 +223,7 @@ class ProductSyncService
 					continue;
 				}
 
-				$response = Http::timeout(20)->get($url);
+				$response = Http::timeout($timeoutSeconds)->get($url);
 				if (!$response->successful()) {
 					continue;
 				}
@@ -342,6 +303,11 @@ class ProductSyncService
 			->filter()
 			->values()
 			->all();
+
+		$maxImages = (int) Config::get('easyorders.max_images_per_product', 3);
+		if ($maxImages > 0 && count($remoteImages) > $maxImages) {
+			$remoteImages = array_slice($remoteImages, 0, $maxImages);
+		}
 
 		// Download remote images into local storage and use local paths for galleries.
 		$images = $this->downloadProductImages($remoteImages);
