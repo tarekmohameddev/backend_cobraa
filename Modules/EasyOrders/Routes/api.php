@@ -39,6 +39,7 @@ Route::prefix('v1')->group(function () {
 		Route::get('temp-orders/{id}', [TempOrderController::class, 'show']);
 		Route::post('temp-orders/{id}/approve', [TempOrderController::class, 'approve']);
 		Route::post('temp-orders/approve', [TempOrderController::class, 'approveBulk']);
+		Route::post('temp-orders/bulk', [TempOrderController::class, 'bulk']);
 
 		// Product catalog sync from EasyOrders
 		Route::post('products/sync', [ProductSyncController::class, 'syncAll']);
