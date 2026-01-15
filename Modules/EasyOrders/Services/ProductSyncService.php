@@ -20,9 +20,11 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Modules\EasyOrders\Entities\EasyOrdersProduct;
+use Modules\EasyOrders\Entities\EasyOrdersProductSync;
 use Modules\EasyOrders\Entities\EasyOrdersStore;
 
 class ProductSyncService
@@ -44,10 +46,16 @@ class ProductSyncService
 	/**
 	 * Sync all products starting from a given page.
 	 */
-	public function syncAll(int $page = 1): void
+	public function syncAll(int $page = 1, ?EasyOrdersProductSync $syncRecord = null): void
 	{
 		$store = $this->getActiveStore();
 		$currentPage = $page;
+		$productsSynced = 0;
+		$productsFailed = 0;
+
+		if ($syncRecord) {
+			$syncRecord->markAsStarted();
+		}
 
 		do {
 			$list = $this->fetchProductList($store, $currentPage);
@@ -57,16 +65,45 @@ class ProductSyncService
 				break;
 			}
 
+			// Try to get total pages from response if available
+			$totalPages = Arr::get($list, 'last_page') ?? Arr::get($list, 'meta.last_page') ?? null;
+
 			foreach ($items as $item) {
 				$externalId = (string) Arr::get($item, 'id');
 				if (!$externalId) {
 					continue;
 				}
-				$this->syncOne($externalId);
+
+				try {
+					$this->syncOne($externalId);
+					$productsSynced++;
+				} catch (\Throwable $e) {
+					$productsFailed++;
+					Log::warning('EasyOrders product sync failed for product', [
+						'external_id' => $externalId,
+						'error' => $e->getMessage(),
+					]);
+					// Continue with next product
+				}
+
+				// Update progress every 10 products
+				if ($syncRecord && ($productsSynced + $productsFailed) % 10 === 0) {
+					$syncRecord->updateProgress($currentPage, $totalPages, $productsSynced, $productsFailed);
+				}
+			}
+
+			// Update progress after each page
+			if ($syncRecord) {
+				$syncRecord->updateProgress($currentPage, $totalPages, $productsSynced, $productsFailed);
 			}
 
 			$currentPage++;
 		} while (true);
+
+		if ($syncRecord) {
+			$syncRecord->updateProgress($currentPage - 1, null, $productsSynced, $productsFailed);
+			$syncRecord->markAsCompleted();
+		}
 	}
 
 	/**

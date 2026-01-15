@@ -42,6 +42,8 @@ Route::prefix('v1')->group(function () {
 
 		// Product catalog sync from EasyOrders
 		Route::post('products/sync', [ProductSyncController::class, 'syncAll']);
+		Route::get('products/sync/status', [ProductSyncController::class, 'getSyncStatus']);
+		Route::get('products/sync/status/{syncId}', [ProductSyncController::class, 'getSyncStatus']);
 		Route::post('products/{externalProductId}/sync', [ProductSyncController::class, 'syncOne']);
 	});
 });
