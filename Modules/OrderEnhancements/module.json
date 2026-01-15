@@ -1,0 +1,13 @@
+{
+    "name": "OrderEnhancements",
+    "alias": "orderenhancements",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\OrderEnhancements\\Providers\\OrderEnhancementsServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

@@ -1,5 +1,6 @@
 {
     "EasyOrders": true,
     "UserManagement": true,
-    "Stox": true
+    "Stox": true,
+    "OrderEnhancements": true
 }
