@@ -195,6 +195,13 @@ class OrderService extends CoreService
                     throw new Exception(__('errors.' . ResponseError::ORDER_NOT_FOUND, locale: $this->language));
                 }
 
+                // Preserve any "manual" discount already applied on the order.
+                // total_discount is used both for item-level discounts (sum of order_details.discount)
+                // and admin-applied manual discounts. On update we rebuild order_details which would
+                // otherwise reset total_discount to only item discounts.
+                $itemsDiscountBeforeUpdate = (double)$order->orderDetails->sum('discount');
+                $manualDiscountBeforeUpdate = max((double)$order->total_discount - $itemsDiscountBeforeUpdate, 0);
+
                 $order->update($data);
 
                 if (data_get($data, 'images.0')) {
@@ -207,7 +214,9 @@ class OrderService extends CoreService
 
                 $order = (new OrderDetailService)->create($order, data_get($data, 'products', []));
 
-                $this->calculateOrder($order, $data, true);
+                $this->calculateOrder($order, array_merge($data, [
+                    '_manual_discount_before_update' => $manualDiscountBeforeUpdate,
+                ]), true);
 
                 return $order;
             });
@@ -253,7 +262,8 @@ class OrderService extends CoreService
         $isSubscribe = (int)Settings::where('key', 'by_subscription')->first()?->value;
 
         $totalPrice = $order->orderDetails->sum('total_price');
-        $discount   = $order->orderDetails->sum('discount');
+        $itemsDiscount = $order->orderDetails->sum('discount');
+        $manualDiscount = (double)data_get($data, '_manual_discount_before_update', 0);
 
         $shopTax = max($totalPrice / 100 * $order->shop?->tax, 0);
 
@@ -310,11 +320,16 @@ class OrderService extends CoreService
         $totalPrice += $deliveryFeeSum;
         $totalPrice -= $couponPriceSum;
 
+        // Apply preserved manual discount after rebuilding totals.
+        if ($manualDiscount > 0) {
+            $totalPrice = max($totalPrice - $manualDiscount, 0);
+        }
+
         $order->update([
             'total_price'       => $totalPrice,
             'tips'              => $data['tips'] ?? $order->tips,
             'commission_fee'    => $commissionFee,
-            'total_discount'    => max($discount, 0),
+            'total_discount'    => max((double)$itemsDiscount + $manualDiscount, 0),
             'total_tax'         => $shopTax,
             'delivery_fee'      => $deliveryFeeSum === 0 ? $order->delivery_fee : $deliveryFeeSum,
             'coupon_price'      => $couponPriceSum === 0 ? $order->coupon_price : $couponPriceSum,
