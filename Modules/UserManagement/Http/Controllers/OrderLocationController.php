@@ -209,9 +209,10 @@ class OrderLocationController extends Controller
         $validated = $request->validated();
         $discountAmount = $validated['discount'];
 
-        // Calculate new totals
-        $newTotalDiscount = $order->total_discount + $discountAmount;
-        $newTotalPrice = max($order->total_price - $discountAmount, 0);
+        // Calculate new totals (replace discount, don't add to existing)
+        $originalPrice = $order->total_price + $order->total_discount;
+        $newTotalDiscount = $discountAmount;
+        $newTotalPrice = max($originalPrice - $discountAmount, 0);
 
         // Prepare update data
         $updateData = [
