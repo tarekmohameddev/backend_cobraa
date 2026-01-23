@@ -316,8 +316,11 @@ class OrderService extends CoreService
         $couponPriceSum = collect($couponPrice)->sum('price');
 
         $deliveryFeeSum = collect($deliveryFee)->sum('price');
+        // If we couldn't recalculate delivery fee (e.g. missing delivery_price_id/city/area),
+        // keep using the current order->delivery_fee in total calculation to avoid dropping it.
+        $deliveryFeeToApply = $deliveryFeeSum > 0 ? $deliveryFeeSum : (double)$order->delivery_fee;
 
-        $totalPrice += $deliveryFeeSum;
+        $totalPrice += $deliveryFeeToApply;
         $totalPrice -= $couponPriceSum;
 
         // Apply preserved manual discount after rebuilding totals.
