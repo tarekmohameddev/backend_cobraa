@@ -105,6 +105,8 @@ class UserRepository extends CoreRepository
 
     public function chatUsersGet(array $filter = []): LengthAwarePaginator
     {
+        $employeeRoles = ['moderator', 'deliveryman', 'manager', 'seller', 'admin'];
+
         return User::select([
             'id',
             'firstname',
@@ -112,6 +114,7 @@ class UserRepository extends CoreRepository
             'img',
             'active',
         ])
+            ->whereHas('roles', fn($q) => $q->whereIn('name', $employeeRoles))
             ->when(isset($filter['ids']) && count($filter['ids']) > 0, fn($q) => $q->whereIn('id', $filter['ids']))
             ->paginate(data_get($filter, 'perPage', 10));
     }
