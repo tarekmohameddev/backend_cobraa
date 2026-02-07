@@ -1,0 +1,111 @@
+---
+description: PHP Laravel backend best practices and architectural guidelines for this project
+globs: "**/*.php"
+alwaysApply: false
+---
+
+# Laravel Backend Best Practices
+
+*Inspired by pragmatic, domain-focused design. Tailored to this PHP Laravel project.*
+
+**Important:** Prefer latest stable Laravel and package versions where possible.
+
+## Core Principles
+
+- **Domain-Focused Structure**: Organize code around business areas (e.g. `Modules/Stox`, `Modules/UserManagement`), not only technical layers. This is *module-based organization by domain*, not full Domain-Driven Design (DDD). True DDD involves bounded contexts, aggregates, value objects, domain events, and ubiquitous language—adopt those explicitly if you introduce them.
+- **Explicit Over Implicit**: Prefer clear, readable code over “magic”; avoid dynamic calls and hidden behavior.
+- **Composition Over Inheritance**: Prefer small, focused classes and traits over deep inheritance.
+- **Single Responsibility**: Each class and method should do one thing well.
+- **Easy to Change**: Design for maintainability; keep boundaries clear so changes are local.
+- **Fail Fast**: Validate at boundaries (FormRequests, service entry points) and handle errors early.
+- **YAGNI**: Don’t build features or abstractions until they’re needed.
+
+## Project Structure
+
+- **Module-Based Organization**: Use `Modules/<ModuleName>/` to group code by business area (e.g. `Stox`, `UserManagement`). Each module is a structural boundary, not necessarily a DDD bounded context. Each module can contain:
+  - `Http/Controllers/`, `Http/Requests/`, `Http/Resources/`
+  - `Repositories/`, `Services/`, `Entities/` (or `Models/` where appropriate)
+  - `Routes/`, `Providers/`
+- **Thin Controllers**: Controllers should only: authorize, validate (via FormRequest), call one service/repository, and return a response. No business logic in controllers.
+- **Repository for Data Access**: Put query and persistence logic in Repositories; keep Controllers and Services free of raw Eloquent/DB details where it improves testability and clarity.
+- **Validate at Boundaries**: Use `FormRequest` for HTTP input validation. Validate service inputs (e.g. DTOs or arrays) at the entry point of a service or repository when called from outside the module.
+
+## Coding Patterns
+
+- **Strict Types**: Use `declare(strict_types=1);` at the top of every PHP file.
+- **Return Types**: Add return types to all methods (e.g. `): JsonResponse`, `): Collection`, `): array`).
+- **FormRequest for Input**: Never trust raw `$request->all()` in controllers; use a dedicated FormRequest with `rules()` and `authorize()`.
+- **Result Conventions**: For operations that can fail, return clearly (e.g. throw exceptions for errors, or return a result DTO/array with a status; avoid silent failures).
+- **Immutability / No Surprises**: Prefer returning new data (e.g. Resources, DTOs) over mutating passed-in objects. Avoid changing global state inside services.
+- **PHPDoc for Complex Types**: Document array shapes and generic types for static analysis (e.g. `@param array{date_from?: string, date_to?: string} $filter`, `@return Collection<int, object{...}>`).
+
+```php
+// ✅ Controller: thin, delegates to repository
+public function employeeExportCounts(StoxEmployeeExportReportRequest $request): JsonResponse
+{
+    $data = $this->repository->getEmployeeExportCounts($request->validated());
+    return $this->successResponse(__('errors.' . ResponseError::NO_ERROR), StoxEmployeeExportCountResource::collection($data));
+}
+
+// ✅ Validation at boundary (FormRequest)
+public function rules(): array
+{
+    return [
+        'date_from' => ['nullable', 'date_format:Y-m-d'],
+        'date_to'   => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
+    ];
+}
+```
+
+## Services, Jobs, and Queues
+
+- **Services for Business Logic**: Put multi-step or cross-entity logic in Service classes; keep Repositories focused on data access.
+- **Jobs for Async Work**: Use Laravel Jobs (and queues) for background processing; avoid long-running work in HTTP request lifecycle.
+- **Failure Handling**: Use retries, `failed()` method, and logging so failed jobs are visible and can be retried or investigated.
+- **Idempotency**: Where possible, design jobs so they can be safely retried without duplicate side effects.
+
+## API and HTTP
+
+- **Resources for Output**: Use Laravel API Resources (e.g. `StoxEmployeeExportCountResource`) to shape JSON responses consistently.
+- **Thin Controllers**: Controllers return responses built from Resources or simple arrays; no business logic.
+- **Security**: Rely on Laravel’s CSRF, validation, and authorization (policies, `authorize()` in FormRequests). Never expose raw internal errors to clients.
+- **External HTTP**: Use Laravel’s HTTP client (or Guzzle) with timeouts and try/catch. Consider retries or circuit breakers for critical external services.
+
+## Testing
+
+- **Test Public APIs**: Focus on controller endpoints and public service/repository methods.
+- **Arrange–Act–Assert**: Structure tests with clear setup, single action, then assertions.
+- **Factories and Seeders**: Use model factories for test data; keep tests readable and stable.
+- **Mock External Services**: Mock HTTP clients and external APIs in tests (e.g. `Http::fake()`).
+- **Tests as Documentation**: Name tests so they describe the behavior (e.g. `it_returns_employee_export_counts_filtered_by_date_range`).
+
+## Naming Conventions
+
+- **Methods**: `camelCase`; use verb-first names (e.g. `getEmployeeExportCounts`, `applyDateFilters`).
+- **Classes**: `PascalCase`; names should reveal intent (e.g. `StoxReportRepository`, `StoxEmployeeExportReportRequest`).
+- **Database / arrays**: `snake_case` for table/column names and array keys when matching DB or API contracts.
+- **Consistent Terminology**: Use the same terms across the module (e.g. “export”, “employee”, “report”) to avoid confusion.
+
+## Documentation and Quality
+
+- **PHPDoc for Public Methods**: Add `@param` and `@return` (and `@throws` when relevant) for public methods.
+- **Comments for “Why”**: Prefer comments that explain why something is done, not what the code does.
+- **Static Analysis**: Use PHPStan (or similar) and fix reported issues; keep `phpstan.neon` and level consistent.
+- **Formatting**: Use project code style (e.g. StyleCI, PHP CS Fixer) and run it before committing.
+
+## Performance
+
+- **Avoid N+1**: Use `with()` / `load()` for relationships; prefer `select()` to limit columns when appropriate.
+- **Pagination**: Paginate large result sets (e.g. `->paginate()`) instead of `->get()` for lists.
+- **Background Jobs**: Offload heavy or external work to queued jobs.
+- **Caching**: Use caching (Cache facade, response caching) where it clearly improves performance; invalidate correctly.
+- **Measure First**: Profile or measure before optimizing; avoid premature complexity.
+
+## Summary Checklist
+
+- [ ] `declare(strict_types=1);` and return types on all methods
+- [ ] Controllers thin: FormRequest → repository/service → Resource/response
+- [ ] Validation at boundaries (FormRequest + optional service-level checks)
+- [ ] Repositories for data access; Services for multi-step business logic
+- [ ] PHPDoc on public methods; comments only when explaining “why”
+- [ ] N+1 avoided; large lists paginated; heavy work in jobs

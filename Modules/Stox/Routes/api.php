@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Stox\Http\Controllers\Dashboard\Admin\StoxAccountController;
 use Modules\Stox\Http\Controllers\Dashboard\Admin\StoxOperationLogController;
 use Modules\Stox\Http\Controllers\Dashboard\Admin\StoxOrderController;
+use Modules\Stox\Http\Controllers\Dashboard\Admin\StoxReportController;
 
 Route::prefix('v1')
     ->middleware(['auth:sanctum'])
@@ -26,6 +27,8 @@ Route::prefix('v1')
 
             Route::get('operation-logs', [StoxOperationLogController::class, 'index']);
             Route::get('operation-logs/export', [StoxOperationLogController::class, 'export']);
+
+            Route::get('reports/employee-export-counts', [StoxReportController::class, 'employeeExportCounts']);
 
             Route::get('accounts/{stoxAccount}/check-discrepancies', [\Modules\Stox\Http\Controllers\Dashboard\Admin\StoxProductSyncController::class, 'checkDiscrepancies']);
         });
