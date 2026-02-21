@@ -16,6 +16,10 @@ class EasyOrdersWebhookLog extends Model
 
 	protected $fillable = [
 		'store_id',
+		'external_order_id',
+		'processing_status',
+		'processed_at',
+		'attempts',
 		'request_headers',
 		'request_body',
 		'http_status',
@@ -25,6 +29,8 @@ class EasyOrdersWebhookLog extends Model
 	protected $casts = [
 		'request_headers' => 'array',
 		'request_body' => 'array',
+		'processed_at' => 'datetime',
+		'attempts' => 'integer',
 	];
 
 	public function store(): BelongsTo

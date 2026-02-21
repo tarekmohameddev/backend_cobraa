@@ -32,6 +32,7 @@ class EasyOrdersServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \Modules\EasyOrders\Console\Commands\SyncEasyOrdersProducts::class,
+                \Modules\EasyOrders\Console\Commands\ProcessStuckWebhooksCommand::class,
             ]);
         }
     }

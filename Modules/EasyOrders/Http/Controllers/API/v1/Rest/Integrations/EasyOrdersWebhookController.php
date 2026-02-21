@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Modules\EasyOrders\Http\Requests\WebhookRequest;
 use Modules\EasyOrders\Services\WebhookService;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 class EasyOrdersWebhookController extends Controller
 {
@@ -29,11 +30,20 @@ class EasyOrdersWebhookController extends Controller
 			return response()->json(['message' => 'Unauthorized'], 401);
 		}
 
-		$temp = $this->service->handle($request->all(), (string) $secret, $request->headers->all());
+		try {
+			$webhookLogId = $this->service->receiveWebhook($request->all(), (string) $secret, $request->headers->all());
+		} catch (HttpExceptionInterface $e) {
+			// Preserve intended HTTP error responses (401/422/etc).
+			throw $e;
+		} catch (\Throwable $e) {
+			// Last resort: return 200 to avoid permanent loss (EasyOrders does not retry).
+			error_log('EasyOrders webhook receive failed: '.$e->getMessage());
+			$webhookLogId = null;
+		}
+
 		return response()->json([
 			'message' => 'accepted',
-			'temp_order_id' => $temp->id,
-			'status' => $temp->status,
+			'webhook_log_id' => $webhookLogId,
 		]);
 	}
 }

@@ -22,6 +22,7 @@ class Kernel extends ConsoleKernel
          $schedule->command('remove:expired:stories')->daily();
          $schedule->command('remove:expired:models')->hourly();
          $schedule->command('remove:expired:warehouse:closed:dates')->hourly();
+         $schedule->command('easyorders:process-stuck-webhooks')->everyFiveMinutes();
     }
 
     /**

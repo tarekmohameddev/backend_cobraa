@@ -7,7 +7,6 @@ namespace Modules\EasyOrders\Services;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Modules\EasyOrders\Entities\EasyOrdersStore;
@@ -15,6 +14,7 @@ use Modules\EasyOrders\Entities\EasyOrdersTempOrder;
 use Modules\EasyOrders\Entities\EasyOrdersWebhookLog;
 use Modules\EasyOrders\Repositories\EasyOrdersStoreRepository;
 use Modules\EasyOrders\Repositories\EasyOrdersTempOrderRepository;
+use Modules\EasyOrders\Jobs\ProcessWebhookJob;
 use Modules\EasyOrders\Jobs\ValidateTempOrderJob;
 use Modules\EasyOrders\Jobs\WaitForPaymentStatusJob;
 
@@ -41,41 +41,98 @@ class WebhookService
 	}
 
 	/**
-	 * Handle inbound webhook payload:
-	 * - verify secret (controller resolves store)
+	 * Fast path for inbound webhook payload:
+	 * - verify webhook secret matches a store
 	 * - dedupe by (store_id, external_order_id)
-	 * - persist payload + denormalized fields
-	 * - enqueue validation
+	 * - persist raw payload (durable inbox) and enqueue async processing
+	 *
+	 * This method MUST NOT do any external HTTP calls or non-durable work because
+	 * EasyOrders does not retry webhooks and there is no pull API.
 	 */
-	public function handle(array $payload, string $webhookSecret, array $headers = []): EasyOrdersTempOrder
+	public function receiveWebhook(array $payload, string $webhookSecret, array $headers = []): int
 	{
 		$store = $this->storeRepository->findByWebhookSecret($webhookSecret);
 		if (!$store) {
 			abort(401, 'Invalid webhook secret');
 		}
 
-		// Keep a copy of the raw webhook body for logging/audit purposes.
-		$webhookBody = $payload;
-
 		$externalOrderId = (string) Arr::get($payload, 'id');
 		if (!$externalOrderId) {
 			abort(422, 'Missing order id');
 		}
 
-		$duplicate = $this->tempOrderRepository->findDuplicate($store->id, $externalOrderId);
-		if ($duplicate) {
-			// Idempotent: return existing and ensure validation job is queued (optional)
-			return $duplicate;
+		$existing = EasyOrdersWebhookLog::query()
+			->where('store_id', $store->id)
+			->where('external_order_id', $externalOrderId)
+			->first();
+
+		if ($existing) {
+			return (int) $existing->id;
 		}
 
-		// Create a webhook log entry for observability.
 		$log = EasyOrdersWebhookLog::query()->create([
 			'store_id' => $store->id,
+			'external_order_id' => $externalOrderId,
+			'processing_status' => 'received',
+			'attempts' => 0,
+			'processed_at' => null,
 			'request_headers' => $headers,
-			'request_body' => $webhookBody,
+			'request_body' => $payload,
 			'http_status' => null,
 			'error' => null,
 		]);
+
+		ProcessWebhookJob::dispatch($log->id)->onQueue('default');
+
+		return (int) $log->id;
+	}
+
+	/**
+	 * Heavy path: process a persisted webhook log.
+	 * Runs in a queue job and may be retried.
+	 */
+	public function processWebhookLog(int $webhookLogId): void
+	{
+		/** @var EasyOrdersWebhookLog|null $log */
+		$log = null;
+
+		DB::transaction(function () use ($webhookLogId, &$log) {
+			$log = EasyOrdersWebhookLog::query()->lockForUpdate()->find($webhookLogId);
+			if (!$log) {
+				return;
+			}
+
+			if ($log->processing_status === 'processed') {
+				return;
+			}
+
+			$log->processing_status = 'processing';
+			$log->attempts = (int) $log->attempts + 1;
+			$log->save();
+		});
+
+		if (!$log) {
+			return;
+		}
+
+		/** @var EasyOrdersStore|null $store */
+		$store = EasyOrdersStore::query()->find($log->store_id);
+		if (!$store) {
+			$this->markWebhookLogFailed($log, 'Missing store for webhook log');
+			return;
+		}
+
+		$externalOrderId = (string) ($log->external_order_id ?: Arr::get($log->request_body ?? [], 'id'));
+		if ($externalOrderId === '') {
+			$this->markWebhookLogFailed($log, 'Missing external order id in webhook log');
+			return;
+		}
+
+		$duplicate = $this->tempOrderRepository->findDuplicate($store->id, $externalOrderId);
+		if ($duplicate) {
+			$this->markWebhookLogProcessed($log);
+			return;
+		}
 
 		// Fetch full order details from EasyOrders API instead of relying solely on webhook payload.
 		$payload = $this->fetchOrderDetails($store, $externalOrderId);
@@ -93,14 +150,6 @@ class WebhookService
 			&& !in_array($paymentMethod, $codMethods, true)
 			&& $externalStatus === 'pending_payment';
 
-		Log::info('EasyOrders webhook received order', [
-			'store_id' => $store->id,
-			'external_order_id' => $externalOrderId,
-			'payment_method' => $paymentMethod,
-			'external_status' => $externalStatus,
-			'should_wait_for_payment' => $shouldWaitForPayment,
-		]);
-
 		$temp = DB::transaction(function () use ($store, $payload, $normalizedData, $shouldWaitForPayment) {
 			$createdDay = $normalizedData['created_day'];
 			$cost = $normalizedData['cost'];
@@ -115,11 +164,7 @@ class WebhookService
 			$temp->short_id = Arr::get($payload, 'short_id');
 			$temp->guest_id = Arr::get($payload, 'guest_id');
 
-			if ($shouldWaitForPayment) {
-				$temp->status = 'waiting_payment';
-			} else {
-				$temp->status = 'pending';
-			}
+			$temp->status = $shouldWaitForPayment ? 'waiting_payment' : 'pending';
 
 			$temp->cost = $cost !== null ? (float) $cost : null;
 			$temp->shipping_cost = $shippingCost !== null ? (float) $shippingCost : null;
@@ -144,32 +189,21 @@ class WebhookService
 
 			$temp->save();
 
-			// Queue next step:
-			// - For COD and already-final non-COD orders, go directly to validation.
-			// - For non-COD pending_payment orders, wait for final payment status via polling job.
 			if ($shouldWaitForPayment) {
-				Log::info('EasyOrders webhook: queued WaitForPaymentStatusJob', [
-					'temp_order_id' => $temp->id,
-					'store_id' => $temp->store_id,
-				]);
 				WaitForPaymentStatusJob::dispatch($temp->id)->onQueue('default');
 			} else {
-				Log::info('EasyOrders webhook: queued ValidateTempOrderJob', [
-					'temp_order_id' => $temp->id,
-					'store_id' => $temp->store_id,
-				]);
 				ValidateTempOrderJob::dispatch($temp->id)->onQueue('default');
 			}
 
 			return $temp;
 		});
 
-		// Mark webhook log as successfully handled.
-		$log->http_status = 200;
-		$log->error = null;
-		$log->save();
+		if (!$temp) {
+			$this->markWebhookLogFailed($log, 'Failed to create temp order from webhook');
+			return;
+		}
 
-		return $temp;
+		$this->markWebhookLogProcessed($log);
 	}
 
 	public function fetchOrderDetails(EasyOrdersStore $store, string $externalOrderId): array
@@ -186,10 +220,35 @@ class WebhookService
 			->get($url);
 
 		if (!$response->successful()) {
-			abort(502, 'Failed to fetch order details from EasyOrders.');
+			throw new \RuntimeException('Failed to fetch order details from EasyOrders (HTTP '.$response->status().').');
 		}
 
 		return $response->json() ?? [];
+	}
+
+	private function markWebhookLogProcessed(EasyOrdersWebhookLog $log): void
+	{
+		try {
+			$log->processing_status = 'processed';
+			$log->processed_at = now();
+			$log->http_status = 200;
+			$log->error = null;
+			$log->save();
+		} catch (\Throwable) {
+			// Never throw while marking processed.
+		}
+	}
+
+	private function markWebhookLogFailed(EasyOrdersWebhookLog $log, string $error): void
+	{
+		try {
+			$log->processing_status = 'failed';
+			$log->http_status = $log->http_status ?? 500;
+			$log->error = trim(($log->error ? $log->error.'; ' : '').$error);
+			$log->save();
+		} catch (\Throwable) {
+			// Never throw while marking failed.
+		}
 	}
 
 	/**
