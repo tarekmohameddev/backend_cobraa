@@ -46,7 +46,6 @@ class UpdateProjectCommand extends Command
         if (!$process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
-        // \Log::info('unzip: ', [$process->getOutput()]);
         $this->info('1. Project was successfully updated');
 
        // 2. Update composer files

@@ -25,6 +25,7 @@ use App\Traits\PaymentRefund;
 use DB;
 use Exception;
 use Log;
+use Modules\OrderEnhancements\Services\OrderActivityLogService;
 use Stripe\Exception\ApiErrorException;
 use Throwable;
 
@@ -48,6 +49,7 @@ class OrderStatusUpdateService extends CoreService
      */
     public function statusUpdate(Order $order, array $data, bool $isDelivery = false): array
     {
+        $fromStatus = (string) $order->status;
         $status = $data['status'];
 
         if ($order->status == $status) {
@@ -147,6 +149,19 @@ class OrderStatusUpdateService extends CoreService
                 'code'    => ResponseError::ERROR_501,
                 'message' => $e->getMessage()
             ];
+        }
+
+        try {
+            $actor = auth('sanctum')->user();
+            $metadata = [];
+
+            if (request()->has('canceled_note')) {
+                $metadata['canceled_note'] = request()->input('canceled_note');
+            }
+
+            (new OrderActivityLogService)->logStatusChange($order, $actor, $fromStatus, (string) $status, $metadata);
+        } catch (Throwable) {
+            // Audit logging must never affect order flow.
         }
 
         $default = Language::where('default', 1)->first()?->locale;

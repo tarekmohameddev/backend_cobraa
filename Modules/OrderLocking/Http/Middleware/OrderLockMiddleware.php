@@ -35,14 +35,7 @@ class OrderLockMiddleware
         // User should be authenticated by sanctum middleware at this point
         // IMPORTANT: Use 'sanctum' guard explicitly to match SanctumCheck middleware
         $userId = auth('sanctum')->id();
-        
-        \Log::info('OrderLockMiddleware: Checking auth state', [
-            'user_id' => $userId,
-            'auth_check' => auth('sanctum')->check(),
-            'auth_user' => auth('sanctum')->user() ? auth('sanctum')->user()->id : null,
-            'order_id' => $orderId,
-        ]);
-        
+
         // If user is not authenticated yet, skip locking
         if (!$userId) {
             \Log::warning('OrderLockMiddleware: Skipping - no authenticated user');

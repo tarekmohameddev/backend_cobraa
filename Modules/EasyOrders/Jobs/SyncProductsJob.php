@@ -50,12 +50,6 @@ class SyncProductsJob implements ShouldQueue
 			$syncRecord->markAsStarted();
 		}
 
-		Log::info('EasyOrders product sync started', [
-			'page' => $this->page,
-			'user_id' => $this->userId,
-			'sync_id' => $this->syncId,
-		]);
-
 		try {
 			$result = $service->listExternalProductIds($this->page);
 			$ids = $result['ids'] ?? [];

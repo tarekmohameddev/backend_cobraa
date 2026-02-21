@@ -31,7 +31,6 @@ class FileDeleteJob implements ShouldQueue
      */
     public function handle()
     {
-        \Log::info('kkk');
         @unlink($this->path);
     }
 }

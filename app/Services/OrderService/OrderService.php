@@ -19,6 +19,8 @@ use App\Services\TransactionService\TransactionService;
 use App\Traits\Notification;
 use DB;
 use Exception;
+use Illuminate\Support\Arr;
+use Modules\OrderEnhancements\Services\OrderActivityLogService;
 use Throwable;
 
 class OrderService extends CoreService
@@ -153,6 +155,17 @@ class OrderService extends CoreService
                 return $orders;
             });
 
+            try {
+                $actor = auth('sanctum')->user();
+                $logger = new OrderActivityLogService();
+
+                foreach ($orders as $order) {
+                    $logger->logCreation($order, $actor);
+                }
+            } catch (Throwable) {
+                // Audit logging must never affect order flow.
+            }
+
             return [
                 'status'  => true,
                 'message' => ResponseError::NO_ERROR,
@@ -180,8 +193,10 @@ class OrderService extends CoreService
         try {
 //            OrderHelper::checkPhoneIfRequired($data, $this->language);
 
+            $itemsDiff = null;
+
             /** @var Order $order */
-            $order = DB::transaction(function () use ($data, $id) {
+            $order = DB::transaction(function () use ($data, $id, &$itemsDiff) {
 
                 /** @var Order $order */
                 $order = $this->model()
@@ -202,7 +217,19 @@ class OrderService extends CoreService
                 $itemsDiscountBeforeUpdate = (double)$order->orderDetails->sum('discount');
                 $manualDiscountBeforeUpdate = max((double)$order->total_discount - $itemsDiscountBeforeUpdate, 0);
 
-                $order->update($data);
+                $before = $order->orderDetails
+                    ->mapWithKeys(static function ($detail) {
+                        $key = ((int)$detail->stock_id) . ':' . ((int)(bool)($detail->bonus ?? false));
+
+                        return [$key => [
+                            'stock_id' => (int)$detail->stock_id,
+                            'bonus' => (bool)($detail->bonus ?? false),
+                            'quantity' => (int)$detail->quantity,
+                        ]];
+                    });
+
+                $orderData = Arr::except($data, ['products', 'images']);
+                $order->update($orderData);
 
                 if (data_get($data, 'images.0')) {
 
@@ -214,12 +241,106 @@ class OrderService extends CoreService
 
                 $order = (new OrderDetailService)->create($order, data_get($data, 'products', []));
 
+                $after = $order->orderDetails()
+                    ->get(['stock_id', 'bonus', 'quantity'])
+                    ->mapWithKeys(static function ($detail) {
+                        $key = ((int)$detail->stock_id) . ':' . ((int)(bool)($detail->bonus ?? false));
+
+                        return [$key => [
+                            'stock_id' => (int)$detail->stock_id,
+                            'bonus' => (bool)($detail->bonus ?? false),
+                            'quantity' => (int)$detail->quantity,
+                        ]];
+                    });
+
+                $allKeys = $before->keys()->merge($after->keys())->unique();
+
+                $linesAdded = 0;
+                $unitsAdded = 0;
+                $linesRemoved = 0;
+                $unitsRemoved = 0;
+                $details = [
+                    'added' => [],
+                    'removed' => [],
+                    'changed' => [],
+                ];
+
+                foreach ($allKeys as $key) {
+                    $b = (int) data_get($before->get($key), 'quantity', 0);
+                    $a = (int) data_get($after->get($key), 'quantity', 0);
+
+                    if ($b <= 0 && $a > 0) {
+                        $linesAdded++;
+                        $unitsAdded += $a;
+                        $details['added'][] = array_merge($after->get($key), ['key' => $key]);
+                        continue;
+                    }
+
+                    if ($b > 0 && $a <= 0) {
+                        $linesRemoved++;
+                        $unitsRemoved += $b;
+                        $details['removed'][] = array_merge($before->get($key), ['key' => $key]);
+                        continue;
+                    }
+
+                    if ($b > 0 && $a > 0 && $a !== $b) {
+                        $delta = $a - $b;
+
+                        if ($delta > 0) {
+                            $unitsAdded += $delta;
+                        } else {
+                            $unitsRemoved += abs($delta);
+                        }
+
+                        $details['changed'][] = [
+                            'key' => $key,
+                            'stock_id' => (int) data_get($after->get($key), 'stock_id'),
+                            'bonus' => (bool) data_get($after->get($key), 'bonus', false),
+                            'before_quantity' => $b,
+                            'after_quantity' => $a,
+                            'delta' => $delta,
+                        ];
+                    }
+                }
+
+                $itemsDiff = [
+                    'lines_added' => $linesAdded,
+                    'units_added' => $unitsAdded,
+                    'lines_removed' => $linesRemoved,
+                    'units_removed' => $unitsRemoved,
+                    'details' => $details,
+                ];
+
                 $this->calculateOrder($order, array_merge($data, [
                     '_manual_discount_before_update' => $manualDiscountBeforeUpdate,
                 ]), true);
 
                 return $order;
             });
+
+            try {
+                if (is_array($itemsDiff)) {
+                    $hasChanges = ((int) data_get($itemsDiff, 'lines_added', 0) > 0)
+                        || ((int) data_get($itemsDiff, 'lines_removed', 0) > 0)
+                        || ((int) data_get($itemsDiff, 'units_added', 0) > 0)
+                        || ((int) data_get($itemsDiff, 'units_removed', 0) > 0);
+
+                    if ($hasChanges) {
+                        $actor = auth('sanctum')->user();
+                        (new OrderActivityLogService)->logItemsModified(
+                            $order,
+                            $actor,
+                            (int) data_get($itemsDiff, 'lines_added', 0),
+                            (int) data_get($itemsDiff, 'units_added', 0),
+                            (int) data_get($itemsDiff, 'lines_removed', 0),
+                            (int) data_get($itemsDiff, 'units_removed', 0),
+                            (array) data_get($itemsDiff, 'details', []),
+                        );
+                    }
+                }
+            } catch (Throwable) {
+                // Audit logging must never affect order flow.
+            }
 
             return [
                 'status'  => true,
@@ -422,6 +543,13 @@ class OrderService extends CoreService
                 'deliveryman_id' => $user->id,
             ]);
 
+            try {
+                $actor = auth('sanctum')->user();
+                (new OrderActivityLogService)->logDeliverymanAssigned($order, $actor, $user);
+            } catch (Throwable) {
+                // Audit logging must never affect order flow.
+            }
+
             $this->sendNotification(
                 $order,
                 is_array($user->firebase_token) ? $user->firebase_token : [$user->firebase_token],
@@ -622,6 +750,13 @@ class OrderService extends CoreService
         }
 
         $order->update($data);
+
+        try {
+            $actor = auth('sanctum')->user();
+            (new OrderActivityLogService)->logTrackingUpdate($order, $actor, $data);
+        } catch (Throwable) {
+            // Audit logging must never affect order flow.
+        }
 
         return $order;
     }

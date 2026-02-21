@@ -13,7 +13,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Modules\EasyOrders\Entities\EasyOrdersTempOrder;
 use Modules\EasyOrders\Services\WebhookService;
 use Modules\EasyOrders\Jobs\ValidateTempOrderJob;
@@ -32,17 +31,10 @@ class WaitForPaymentStatusJob implements ShouldQueue
 		/** @var EasyOrdersTempOrder|null $temp */
 		$temp = EasyOrdersTempOrder::query()->with('store')->find($this->tempOrderId);
 		if (!$temp) {
-			Log::info('EasyOrders wait-payment: temp order not found', [
-				'temp_order_id' => $this->tempOrderId,
-			]);
 			return;
 		}
 
 		if ($temp->status !== 'waiting_payment') {
-			Log::info('EasyOrders wait-payment: skipping, status no longer waiting_payment', [
-				'temp_order_id' => $temp->id,
-				'status' => $temp->status,
-			]);
 			return;
 		}
 
@@ -77,12 +69,6 @@ class WaitForPaymentStatusJob implements ShouldQueue
 				$temp->save();
 			});
 
-			Log::info('EasyOrders wait-payment: timeout reached, importing as unpaid', [
-				'temp_order_id' => $temp->id,
-				'external_order_id' => $temp->external_order_id,
-				'timeout_minutes' => $timeoutMinutes,
-			]);
-
 			// Dispatch validation job to proceed with normal import flow
 			ValidateTempOrderJob::dispatch($temp->id)->onQueue('default');
 			return;
@@ -99,36 +85,18 @@ class WaitForPaymentStatusJob implements ShouldQueue
 				$temp->save();
 			});
 
-			Log::info('EasyOrders wait-payment: missing store, marking import_failed', [
-				'temp_order_id' => $temp->id,
-				'external_order_id' => $temp->external_order_id,
-			]);
-
 			return;
 		}
 
 		try {
 			$payload = $webhookService->fetchOrderDetails($store, $temp->external_order_id);
 		} catch (\Throwable $e) {
-			Log::info('EasyOrders wait-payment: error fetching order details, will retry', [
-				'temp_order_id' => $temp->id,
-				'external_order_id' => $temp->external_order_id,
-				'error' => $e->getMessage(),
-			]);
-
 			$this->reschedule($temp, $deadline);
 			return;
 		}
 
 		$externalStatus = Arr::get($payload, 'status');
 		$paymentMethod = Arr::get($payload, 'payment_method');
-
-		Log::info('EasyOrders wait-payment: polled EasyOrders status', [
-			'temp_order_id' => $temp->id,
-			'external_order_id' => $temp->external_order_id,
-			'external_status' => $externalStatus,
-			'payment_method' => $paymentMethod,
-		]);
 
 		if ($externalStatus === 'pending_payment') {
 			$this->reschedule($temp, $deadline);
@@ -159,12 +127,6 @@ class WaitForPaymentStatusJob implements ShouldQueue
 				$temp->save();
 			});
 
-			Log::info('EasyOrders wait-payment: final payment status reached, dispatching validation', [
-				'temp_order_id' => $temp->id,
-				'external_order_id' => $temp->external_order_id,
-				'final_status' => $externalStatus,
-			]);
-
 			ValidateTempOrderJob::dispatch($temp->id)->onQueue('default');
 			return;
 		}
@@ -181,14 +143,6 @@ class WaitForPaymentStatusJob implements ShouldQueue
 		$temp->save();
 
 		$delaySeconds = max($interval, 1);
-
-		Log::info('EasyOrders wait-payment: rescheduling poll', [
-			'temp_order_id' => $temp->id,
-			'external_order_id' => $temp->external_order_id,
-			'next_attempt_in_seconds' => $delaySeconds,
-			'payment_poll_attempts' => $temp->payment_poll_attempts,
-			'deadline' => $deadline->toIso8601String(),
-		]);
 
 		static::dispatch($temp->id)->delay(now()->addSeconds($delaySeconds));
 	}

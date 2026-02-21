@@ -14,6 +14,8 @@ class StoxEmployeeExportCountResource extends JsonResource
             'user_id' => $this->resource->user_id,
             'user_name' => $this->resource->user_name,
             'orders_exported_count' => $this->resource->orders_exported_count,
+            'total_lines_added' => $this->resource->total_lines_added ?? 0,
+            'total_units_added' => $this->resource->total_units_added ?? 0,
         ];
     }
 }

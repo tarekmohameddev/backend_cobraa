@@ -21,6 +21,14 @@
         <server name="APP_ENV" value="testing"/>
         <server name="BCRYPT_ROUNDS" value="4"/>
         <server name="CACHE_DRIVER" value="array"/>
+        <!-- Dedicated testing DB (safe: never touches your dev DB) -->
+        <server name="DB_CONNECTION" value="mysql"/>
+        <server name="DB_HOST" value="localhost"/>
+        <server name="DB_PORT" value="3306"/>
+        <server name="DB_DATABASE" value="cupra2_test"/>
+        <server name="DB_USERNAME" value="root"/>
+        <server name="DB_PASSWORD" value=""/>
+        <!-- Alternative (fast, but not compatible with all migrations): -->
         <!-- <server name="DB_CONNECTION" value="sqlite"/> -->
         <!-- <server name="DB_DATABASE" value=":memory:"/> -->
         <server name="MAIL_MAILER" value="array"/>

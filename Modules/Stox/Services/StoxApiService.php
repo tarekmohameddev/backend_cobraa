@@ -8,7 +8,6 @@ use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Arr;
 use Modules\Stox\Entities\StoxAccount;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class StoxApiService
@@ -65,21 +64,15 @@ class StoxApiService
         array $payload,
         string $method = 'post'
     ): array {
-
-        log::info('here _ 1ccccccc');
-        log::info($payload);
         $request = $this->buildRequest($account);
         $response = null;
 
         try {
-            log::info('here _ 4ccccccc');
             $response = $method === 'get'
                 ? $request->get($path, $payload)
                 : $request->{$method}($path, $payload);
 
             $body = $response->json();
-            log::info('here _ 3ccccccc');
-            log::info($body);
             return [
                 'success' => $response->successful(),
                 'status' => $response->status(),
