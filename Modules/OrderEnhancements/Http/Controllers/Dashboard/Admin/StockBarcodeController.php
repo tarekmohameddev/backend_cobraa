@@ -34,6 +34,13 @@ class StockBarcodeController extends Controller
             return $this->onErrorResponse(['code' => ResponseError::ERROR_404]);
         }
 
+        if ((int) $stock->quantity < 1) {
+            return $this->onErrorResponse([
+                'code'    => ResponseError::ERROR_430,
+                'message' => 'There is no stock for this item',
+            ]);
+        }
+
         return $this->successResponse(
             __('errors.' . ResponseError::NO_ERROR),
             StockResource::make($stock)
