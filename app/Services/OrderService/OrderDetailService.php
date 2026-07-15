@@ -103,12 +103,19 @@ class OrderDetailService extends CoreService
             }
 
             /** @var OrderDetail $orderDetail */
+            $itemParams = OrderHelper::setItemParams($item, $stock);
+
+            if (!empty($replaceStock)) {
+                // Keep original-stock pricing, but persist the replacement stock on the line.
+                $itemParams['stock_id'] = $replaceStock->id;
+            }
+
             $orderDetail = $order->orderDetails()->updateOrCreate(
                 [
                     'stock_id' => !empty($replaceStock) ? $replaceStock->id : $stock->id,
                     'bonus'    => $item['bonus'] ?? false,
                 ],
-                OrderHelper::setItemParams($item, $stock)
+                $itemParams
             );
 
             if (data_get($item, 'images.0')) {
