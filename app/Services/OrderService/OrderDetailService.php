@@ -60,18 +60,21 @@ class OrderDetailService extends CoreService
 
         foreach ($data as $item) {
 
-            /** @var Stock $stock */
-            $stock = Stock::with([
-                'product:id,status,active,shop_id,min_qty,max_qty,tax,interval,digital',
-                'product.shop:id,status,lat_long',
-                'discount' => fn($q) => $q
-                    ->where('start', '<=', today())
-                    ->where('end', '>=', today())
-                    ->where('active', 1),
-                'wholeSalePrices' => fn($q) => $q
-                    ->where('min_quantity', '<=', $item['quantity'])
-                    ->where('max_quantity', '>=', $item['quantity']),
-            ])
+            /** @var Stock|null $stock */
+            // Include soft-deleted stocks: EasyOrders/product sync can replace variants and
+            // soft-delete old stocks; order edit must still keep those existing lines.
+            $stock = Stock::withTrashed()
+                ->with([
+                    'product:id,status,active,shop_id,min_qty,max_qty,tax,interval,digital',
+                    'product.shop:id,status,lat_long',
+                    'discount' => fn($q) => $q
+                        ->where('start', '<=', today())
+                        ->where('end', '>=', today())
+                        ->where('active', 1),
+                    'wholeSalePrices' => fn($q) => $q
+                        ->where('min_quantity', '<=', $item['quantity'])
+                        ->where('max_quantity', '>=', $item['quantity']),
+                ])
                 ->find($item['stock_id']);
 
             if (!$stock?->product?->active || $stock?->product?->status != Product::PUBLISHED) {
@@ -93,7 +96,7 @@ class OrderDetailService extends CoreService
 
             if (isset($item['replace_stock_id'])) {
 
-                $replaceStock = Stock::find($item['replace_stock_id']);
+                $replaceStock = Stock::withTrashed()->find($item['replace_stock_id']);
 
                 $this->replaceCalculate($order, $stock, $item, $replaceStock, $replaceDifferent);
 
