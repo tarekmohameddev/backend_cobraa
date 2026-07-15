@@ -14,6 +14,9 @@ use App\Models\Product;
 
 class ValidationService
 {
+	public function __construct(private readonly StockResolver $stockResolver)
+	{
+	}
 	public function validate(int $tempOrderId): void
 	{
 		$temp = EasyOrdersTempOrder::query()->find($tempOrderId);
@@ -44,7 +47,7 @@ class ValidationService
 
 			// NOTE: Hook up your real SKU resolvers here.
 			// Prefer variant SKU, fallback to product SKU.
-			$match = $this->resolveBySku($variantSku, $productSku);
+			$match = $this->stockResolver->resolveMatchForItem($item);
 			if (!$match) {
 				$errors[] = "Unknown SKU at item #".($index + 1).": ".($variantSku ?: $productSku ?: 'N/A');
 			} else {
@@ -115,31 +118,5 @@ class ValidationService
 			ImportTempOrderJob::dispatch($temp->id)->onQueue('default');
 		}
 	}
-
-	/**
-	 * Replace with actual SKU resolution against your catalog.
-	 * Return ['product_id' => int, 'variant_id' => int|null] or null if not found.
-	 */
-	private function resolveBySku(?string $variantSku, ?string $productSku): ?array
-	{
-		$stock = null;
-		if ($variantSku) {
-			$stock = Stock::with('product:id,shop_id,active,status')->where('sku', $variantSku)->first();
-		}
-		if (!$stock && $productSku) {
-			$stock = Stock::with('product:id,shop_id,active,status')->where('sku', $productSku)->first();
-		}
-		if (!$stock) {
-			return null;
-		}
-		return [
-			'product_id' => $stock->product_id,
-			'variant_id' => $stock->id,
-			'stock_id' => $stock->id,
-			'shop_id' => $stock->product?->shop_id,
-			'stock_model' => $stock,
-		];
-	}
 }
-
 

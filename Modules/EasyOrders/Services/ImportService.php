@@ -23,17 +23,22 @@ use Illuminate\Support\Arr;
 
 class ImportService
 {
+	public function __construct(private readonly StockResolver $stockResolver)
+	{
+	}
+
 	public function import(int $tempOrderId): void
 	{
 		$temp = EasyOrdersTempOrder::query()->find($tempOrderId);
 		if (!$temp) {
 			return;
 		}
-		if (in_array($temp->status, ['imported'])) {
+		// Skip only when import actually produced an order.
+		if ($temp->status === 'imported' && $temp->imported_order_id) {
 			return;
 		}
 		// Only import validated or approved
-		if (!in_array($temp->status, ['validated', 'approved'])) {
+		if (!in_array($temp->status, ['validated', 'approved', 'imported', 'import_failed'], true)) {
 			return;
 		}
 
@@ -128,16 +133,18 @@ class ImportService
 			// Build POS payload grouped by shop
 			$byShop = [];
 			foreach ($items as $item) {
-				$stockId = data_get($item, 'resolved.stock_id');
 				$qty = (int) data_get($item, 'quantity', 0);
-				if (!$stockId || $qty <= 0) {
+				if ($qty <= 0) {
 					continue;
 				}
+
 				/** @var Stock|null $stock */
-				$stock = Stock::with('product:id,shop_id')->find($stockId);
+				$stock = $this->stockResolver->resolveForItem($item);
 				if (!$stock || !$stock->product?->shop_id) {
 					continue;
 				}
+
+				$stockId = $stock->id;
 				$shopId = $stock->product->shop_id;
 				$byShop[$shopId]['shop_id'] = $shopId;
 				$byShop[$shopId]['products'][] = [
@@ -145,6 +152,14 @@ class ImportService
 					'quantity' => $qty,
 					'bonus' => false,
 				];
+			}
+
+			if (empty($byShop)) {
+				$temp->status = 'import_failed';
+				$temp->failure_reason = 'No importable items: product stocks may have been replaced or are unavailable';
+				$temp->save();
+
+				return;
 			}
 
 			$payload = [
@@ -353,8 +368,18 @@ class ImportService
 				}
 
 				$firstOrderId = !empty($orderModels) ? (int) $orderModels[0]->id : null;
+
+				if (!$firstOrderId) {
+					$temp->status = 'import_failed';
+					$temp->failure_reason = (string) data_get($result, 'message', 'No orders were created during import');
+					$temp->save();
+
+					return;
+				}
+
 				$temp->status = 'imported';
 				$temp->imported_order_id = $firstOrderId;
+				$temp->failure_reason = null;
 				$temp->save();
 			} else {
 				$temp->status = 'import_failed';
