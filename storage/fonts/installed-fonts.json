@@ -1,0 +1,20 @@
+{
+    "sans-serif": {
+        "normal": "DejaVuSans",
+        "bold": "DejaVuSans-Bold",
+        "italic": "DejaVuSans-Oblique",
+        "bold_italic": "DejaVuSans-BoldOblique"
+    },
+    "serif": {
+        "normal": "DejaVuSans",
+        "bold": "DejaVuSans-Bold",
+        "italic": "DejaVuSans-Oblique",
+        "bold_italic": "DejaVuSans-BoldOblique"
+    },
+    "dejavu sans": {
+        "normal": "DejaVuSans",
+        "bold": "DejaVuSans-Bold",
+        "italic": "DejaVuSans-Oblique",
+        "bold_italic": "DejaVuSans-BoldOblique"
+    }
+}

@@ -30,6 +30,7 @@
         "intervention/image": "^2.7",
         "iyzico/iyzipay-php": "^2.0",
         "jenssegers/agent": "^2.6",
+        "khaled.alshamaa/ar-php": "^7.0",
         "kreait/laravel-firebase": "^4.2",
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",

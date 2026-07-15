@@ -2,198 +2,184 @@
 <html lang="en">
 <?php
 /** @var App\Models\Order $order */
-/** @var App\Models\OrderDetail $detail */
-
 /** @var string $logo */
+/** @var string $lang */
 
+use App\Helpers\ArabicPdfText;
 use App\Helpers\ResponseError;
 
-$userName  = "{$order->user?->firstname} {$order->user?->lastname}";
+$userName  = ArabicPdfText::shape(trim("{$order->user?->firstname} {$order->user?->lastname}"));
 $userPhone = $order->phone ?? $order->user?->phone;
-
-$address  = data_get($order, 'address.address', '');
-$position = $order?->currency?->position;
-$symbol   = $order?->currency?->symbol;
-$products = [];
+$address   = ArabicPdfText::shape((string) data_get($order, 'address.address', ''));
+$floorLine = ArabicPdfText::shape(trim(implode(' ', array_filter([
+    data_get($order, 'address.floor'),
+    data_get($order, 'address.house'),
+    data_get($order, 'address.office'),
+]))));
+$position  = $order?->currency?->position;
+$symbol    = $order?->currency?->symbol;
+$products  = [];
 
 foreach ($order->orderDetails as $orderDetail) {
+    $title = (string) $orderDetail->stock?->product?->translation?->title;
 
-    $title = "{$orderDetail->stock?->product?->translation?->title} (";
-
-    foreach ($orderDetail->stock?->stockExtras?->sortDesc() as $item) {
-        $title .= "{$item->group?->translation?->title}: {$item->value?->value}, ";
+    $extras = [];
+    foreach ($orderDetail->stock?->stockExtras?->sortDesc() ?? [] as $item) {
+        $extras[] = trim(($item->group?->translation?->title ?? '') . ': ' . ($item->value?->value ?? ''));
     }
 
-    $title = rtrim($title, ', ');
+    if ($extras) {
+        $title .= ' (' . implode(', ', $extras) . ')';
+    }
 
     $products[] = [
         'id'                => $orderDetail->stock->product->id,
-        'title'             => "$title)",
-        'rate_tax'          => $orderDetail->rate_tax,
+        'title'             => ArabicPdfText::shape($title),
         'quantity'          => $orderDetail->quantity,
         'rate_discount'     => $orderDetail->rate_discount,
         'rate_origin_price' => $orderDetail->rate_origin_price,
         'rate_total_price'  => $orderDetail->rate_total_price,
     ];
 }
-
 ?>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"
-    >
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ __('errors.' . ResponseError::ORDER, locale: $lang) }} {{$order?->id}}</title>
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
-        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-        crossorigin="anonymous"
-    >
+    <title>{{ __('errors.' . ResponseError::ORDER, locale: $lang) }} {{ $order?->id }}</title>
     <style>
-        html {
-            -webkit-box-sizing: border-box;
-            box-sizing: border-box;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @page { margin: 24px; }
+        body {
+            font-family: "DejaVu Sans", sans-serif;
+            font-size: 10px;
+            color: #222;
+            line-height: 1.35;
+            padding: 24px;
         }
-
-        .logo {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            overflow: hidden;
+        .header {
+            width: 100%;
+            margin-bottom: 14px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
         }
-
-        .subtitle {
-            margin-top: 50px;
+        .header td { vertical-align: top; }
+        .logo { width: 56px; height: 56px; }
+        .invoice-title { font-size: 16px; font-weight: bold; text-align: right; }
+        .invoice-date { font-size: 11px; color: #666; text-align: right; margin-top: 2px; }
+        .section { margin-bottom: 14px; }
+        .section-title { font-size: 11px; font-weight: bold; margin-bottom: 4px; }
+        .muted { color: #555; }
+        table.data {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            table-layout: fixed;
         }
-
-        .space {
-            margin-top: 300px;
+        table.data th, table.data td {
+            border: 1px solid #ccc;
+            padding: 5px 6px;
+            font-size: 9px;
+            vertical-align: top;
+            word-wrap: break-word;
         }
+        table.data th {
+            background: #f3f3f3;
+            font-weight: bold;
+            text-align: left;
+        }
+        .text-right { text-align: right; }
+        .col-id { width: 10%; }
+        .col-qty { width: 10%; }
+        .col-num { width: 14%; }
     </style>
 </head>
 <body>
-<div class="container d-flex justify-content-between">
-    <div class="float-left">
-        <img class="logo" src="{{$logo}}" alt="logo"/>
-    </div>
-    <div class="float-right">
-        <h1 class="title">{{ __('errors.' . ResponseError::INVOICE, locale: $lang) }} #{{ $order->id }}</h1>
-        <h2 class="title gray">{{ $order->created_at?->format('Y-m-d') }}</h2>
-    </div>
-</div>
-<div class="container d-flex justify-content-between" style="margin-top: 100px">
-    <div class="float-left" style="margin-right: 50px">
-        <h3 class="subtitle">{{ __('errors.' . ResponseError::ADDRESS_PLACE, locale: $lang) }}</h3>
-        <div class="address__info">
-            <div class="address__info--item">{!! $userName !!}</div>
-            <div class="address__info--item">{!! $address !!}</div>
-            <div class="address__info--item">{!! data_get($order, 'address.floor', '') .
-                data_get($order, 'address.house', '') . data_get($order, 'address.office', '') !!}
-            </div>
-            <div class="address__info--item">
-                {!! !empty($userPhone) ? '+' . str_replace('+', '', $userPhone) : '' !!}
-            </div>
-        </div>
-    </div>
-</div>
-<div class="space"></div>
-<table class="table table-striped mt-4 table-bordered">
+<table class="header">
+    <tr>
+        <td style="width: 70px;">
+            @if($logo)
+                <img class="logo" src="{{ $logo }}" alt="logo"/>
+            @endif
+        </td>
+        <td>
+            <div class="section-title">{{ __('errors.' . ResponseError::ADDRESS_PLACE, locale: $lang) }}</div>
+            <div class="muted">{{ $userName }}</div>
+            @if($address !== '')
+                <div class="muted">{{ $address }}</div>
+            @endif
+            @if($floorLine !== '')
+                <div class="muted">{{ $floorLine }}</div>
+            @endif
+            @if(!empty($userPhone))
+                <div class="muted">+{{ str_replace('+', '', $userPhone) }}</div>
+            @endif
+        </td>
+        <td class="text-right" style="width: 38%;">
+            <div class="invoice-title">{{ __('errors.' . ResponseError::INVOICE, locale: $lang) }} #{{ $order->id }}</div>
+            <div class="invoice-date">{{ $order->created_at?->format('Y-m-d') }}</div>
+        </td>
+    </tr>
+</table>
+
+<table class="data">
     <thead>
     <tr>
-        <th scope="col">#</th>
-        <th scope="col">{{ __('errors.' . ResponseError::FROM, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::NUMBER, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::DATE, locale: $lang) }}</th>
+        <th class="col-id">#</th>
+        <th>{{ __('errors.' . ResponseError::PRODUCT, locale: $lang) }}</th>
+        <th class="col-qty">{{ __('errors.' . ResponseError::QUANTITY, locale: $lang) }}</th>
+        <th class="col-num">{{ __('errors.' . ResponseError::DISCOUNT, locale: $lang) }}</th>
+        <th class="col-num">{{ __('errors.' . ResponseError::PRICE, locale: $lang) }}</th>
+        <th class="col-num">{{ __('errors.' . ResponseError::TOTAL_PRICE, locale: $lang) }}</th>
     </tr>
     </thead>
     <tbody>
-    <tr>
-        <th scope="row">{{ $order->id }}</th>
-        <td>{{ $order->created_at?->format('Y-m-d') }}</td>
-        <td>{{ $order->id }}</td>
-        <td>{{ $order->created_at?->format('Y-m-d') }}</td>
-    </tr>
+    @forelse($products as $product)
+        <tr>
+            <td>#{{ $product['id'] ?? 0 }}</td>
+            <td>{{ $product['title'] ?? 'no name' }}</td>
+            <td>{{ $product['quantity'] ?? 0 }}</td>
+            <td>{{ number_format((float) ($product['rate_discount'] ?? 0), 2) }}</td>
+            <td>
+                {{ $position === 'before' ? $symbol : '' }}
+                {{ number_format($product['rate_origin_price'] ?? 0, 2) }}
+                {{ $position === 'after' ? $symbol : '' }}
+            </td>
+            <td>
+                {{ $position === 'before' ? $symbol : '' }}
+                {{ number_format($product['rate_total_price'] ?? 0, 2) }}
+                {{ $position === 'after' ? $symbol : '' }}
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="6">—</td>
+        </tr>
+    @endforelse
     </tbody>
 </table>
-<table class="table table-striped mt-4 table-bordered"> {{-- style="page-break-after: always;" --}}
+
+<table class="data">
     <thead>
     <tr>
-        <th scope="col">#</th>
-        <th scope="col">{{ __('errors.' . ResponseError::PRODUCT, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::TOTAL_TAX, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::PRICE_WITHOUT_TAX, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::QUANTITY, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::DISCOUNT, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::TOTAL_PRICE_WITHOUT_TAX, locale: $lang) }}</th>
-    </tr>
-    </thead>
-    <tbody>
-        @foreach($products as $product)
-            <tr>
-                <th scope="row">#{{ $product['id'] ?? 0 }}</th>
-                <td>{{ $product['title'] ?? 'no name' }}</td>
-                <td>{{ number_format(@($product['rate_tax']) ?? 0, 2) }}</td>
-                <td>
-                    {{ $position === 'before' ? $symbol : '' }}
-                    {{ number_format($product['rate_origin_price'] ?? 0, 2)  }}
-                    {{ $position === 'after' ? $symbol : '' }}
-                </td>
-                <td>{{ $product['quantity'] ?? 0 }}</td>
-                <td>{{ $product['rate_discount'] ?? 0 }}</td>
-                <td>
-                    {{ $position === 'before' ? $symbol : '' }}
-                    {{ number_format(@($product['rate_total_price']) ?? 0, 2) }}
-                    {{ $position === 'after' ? $symbol : '' }}
-                </td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
-<table class="table table-striped mt-4 table-bordered">
-    <thead>
-    <tr>
-        <th scope="col">{{ __('errors.' . ResponseError::DETAILS, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::TAX, locale: $lang) }} %</th>
-        <th scope="col">{{ $position === 'before' ? $symbol : '' }} {{ __('errors.' . ResponseError::TAX, locale: $lang) }} {{ $position === 'after' ? $symbol : '' }}</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <th scope="row">{{$order->shop?->translation?->title}}</th>
-        <td>{{ $order->shop?->tax }}</td>
-        <td>{{ number_format($order->rate_total_tax, 2) }}</td>
-    </tr>
-    </tbody>
-</table>
-<table class="table table-striped table-bordered">
-    <thead>
-    <tr>
-        <th scope="col">{{ __('errors.' . ResponseError::PRICE, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::DELIVERY_FEE, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::PRICE, locale: $lang) }}</th>
-        <th scope="col">{{ __('errors.' . ResponseError::COUPON, locale: $lang) }}</th>
-        <th scope="col">
-            {{ $position === 'before' ? $symbol : '' }} {{ __('errors.' . ResponseError::TOTAL_PRICE, locale: $lang) }} {{ $position === 'after' ? $symbol : '' }}
-        </th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <th scope="row">
+        <th>{{ __('errors.' . ResponseError::PRICE, locale: $lang) }}</th>
+        <th>{{ __('errors.' . ResponseError::DELIVERY_FEE, locale: $lang) }}</th>
+        <th>{{ __('errors.' . ResponseError::COUPON, locale: $lang) }}</th>
+        <th>
             {{ $position === 'before' ? $symbol : '' }}
-            {{ number_format(($order->rate_total_price - $order->rate_total_tax), 2) }}
+            {{ __('errors.' . ResponseError::TOTAL_PRICE, locale: $lang) }}
             {{ $position === 'after' ? $symbol : '' }}
         </th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
         <td>
             {{ $position === 'before' ? $symbol : '' }}
-            {{ number_format($order->rate_delivery_fee, 2) }}
+            {{ number_format($order->rate_total_price - $order->rate_delivery_fee - $order->rate_coupon_price, 2) }}
             {{ $position === 'after' ? $symbol : '' }}
         </td>
         <td>
             {{ $position === 'before' ? $symbol : '' }}
-            {{ number_format($order->rate_total_price, 2) }}
+            {{ number_format($order->rate_delivery_fee, 2) }}
             {{ $position === 'after' ? $symbol : '' }}
         </td>
         <td>
@@ -209,27 +195,5 @@ foreach ($order->orderDetails as $orderDetail) {
     </tr>
     </tbody>
 </table>
-<div class="container float-left">
-    <p><b>{{ __('errors.' . ResponseError::DELIVERY_DATE_TIME, locale: $lang) }}:</b> {{ $order->delivery_date }}</p>
-</div>
-
-<script
-    src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-    crossorigin="anonymous">
-</script>
-
-<script
-    src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
-    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-    crossorigin="anonymous">
-</script>
-
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
-    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-    crossorigin="anonymous">
-</script>
-
 </body>
 </html>

@@ -240,7 +240,9 @@ class OrderRepository extends CoreRepository
         $logo = Settings::where('key', 'logo')->first()?->value;
         $lang = $this->language;
 
-        PDF::setOption(['dpi' => 150, 'defaultFont' => 'sans-serif']);
+        // DejaVu Sans embeds Arabic glyphs; Core PDF fonts (Helvetica/sans-serif) render as ???
+        // dpi 96 keeps DomPDF sizing compact so the invoice fits on one page.
+        PDF::setOption(['dpi' => 96, 'defaultFont' => 'DejaVu Sans']);
 
         $pdf = PDF::loadView('order-invoice', compact('order', 'logo', 'lang'));
 
@@ -295,7 +297,8 @@ class OrderRepository extends CoreRepository
 
         $lang = $this->language;
 
-        PDF::setOption(['dpi' => 150, 'defaultFont' => 'sans-serif']);
+        // DejaVu Sans embeds Arabic glyphs; Core PDF fonts (Helvetica/sans-serif) render as ???
+        PDF::setOption(['dpi' => 96, 'defaultFont' => 'DejaVu Sans']);
 
         $pdf = PDF::loadView('parent-order-invoice', compact('orders', 'logo', 'lang'));
 

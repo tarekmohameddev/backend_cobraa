@@ -209,7 +209,8 @@ class EmailSendService extends CoreService
      */
     public function sendOrder(Order $order): array
     {
-        Pdf::setOption(['dpi' => 150, 'defaultFont' => 'sans-serif']);
+        // DejaVu Sans embeds Arabic glyphs; Core PDF fonts (Helvetica/sans-serif) render as ???
+        Pdf::setOption(['dpi' => 96, 'defaultFont' => 'DejaVu Sans']);
 
         $titleKey = "order.email.invoice.$order->status.title";
         $title    = Translation::where(['locale' => $this->language, 'key' => $titleKey])->first()?->value ?? $titleKey;

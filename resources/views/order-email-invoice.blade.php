@@ -84,7 +84,7 @@ if ($order->delivery_type !== Order::DELIVERY) {
     <title>{{ $title }}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "DejaVu Sans", Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f8f8f8;
