@@ -433,19 +433,19 @@ Route::group(['prefix' => 'v1', 'middleware' => ['block.ip']], function () {
             /* Extras Group & Value */
             Route::get('extra/groups/types',        [Seller\ExtraGroupController::class, 'typesList']);
 
-            Route::apiResource('extra/groups', Seller\ExtraGroupController::class);
+            Route::apiResource('extra/groups', Seller\ExtraGroupController::class)->names('extra.groups');
             Route::delete('extra/groups/delete',    [Seller\ExtraGroupController::class, 'destroy']);
 
-            Route::apiResource('extra/values', Seller\ExtraValueController::class);
+            Route::apiResource('extra/values', Seller\ExtraValueController::class)->names('extra.values');
             Route::delete('extra/values/delete',    [Seller\ExtraValueController::class, 'destroy']);
 
             /* Property Group & Value */
             Route::get('property/groups/types',     [Seller\PropertyGroupController::class, 'typeList']);
 
-            Route::apiResource('property/groups', Seller\PropertyGroupController::class);
+            Route::apiResource('property/groups', Seller\PropertyGroupController::class)->names('property.groups');
             Route::delete('property/groups/delete', [Seller\PropertyGroupController::class, 'destroy']);
 
-            Route::apiResource('property/values', Seller\PropertyValueController::class);
+            Route::apiResource('property/values', Seller\PropertyValueController::class)->names('property.values');
             Route::delete('property/values/delete', [Seller\PropertyValueController::class, 'destroy']);
 
             /* Units */
@@ -754,21 +754,21 @@ Route::group(['prefix' => 'v1', 'middleware' => ['block.ip']], function () {
             /* Extras Group & Value */
             Route::get('extra/groups/types',            [Admin\ExtraGroupController::class, 'typesList']);
 
-            Route::apiResource('extra/groups', Admin\ExtraGroupController::class);
+            Route::apiResource('extra/groups', Admin\ExtraGroupController::class)->names('extra.groups');
             Route::delete('extra/groups/delete',        [Admin\ExtraGroupController::class, 'destroy']);
             Route::get('extra/groups/drop/all',         [Admin\ExtraGroupController::class, 'dropAll']);
 
-            Route::apiResource('extra/values', Admin\ExtraValueController::class);
+            Route::apiResource('extra/values', Admin\ExtraValueController::class)->names('extra.values');
             Route::delete('extra/values/delete',        [Admin\ExtraValueController::class, 'destroy']);
             Route::get('extra/values/drop/all',         [Admin\ExtraValueController::class, 'dropAll']);
 
             /* Property Group & Value */
             Route::get('property/groups/types',         [Admin\PropertyGroupController::class, 'typeList']);
-            Route::apiResource('property/groups', Admin\PropertyGroupController::class);
+            Route::apiResource('property/groups', Admin\PropertyGroupController::class)->names('property.groups');
             Route::delete('property/groups/delete',     [Admin\PropertyGroupController::class, 'destroy']);
             Route::post('property/groups/{id}/active',  [Admin\PropertyGroupController::class, 'changeActive']);
 
-            Route::apiResource('property/values', Admin\PropertyValueController::class);
+            Route::apiResource('property/values', Admin\PropertyValueController::class)->names('property.values');
             Route::delete('property/values/delete',     [Admin\PropertyValueController::class, 'destroy']);
             Route::post('property/values/{id}/active',  [Admin\PropertyValueController::class, 'changeActive']);
 
