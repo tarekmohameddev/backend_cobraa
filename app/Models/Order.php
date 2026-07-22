@@ -54,6 +54,7 @@ use Schema;
  * @property array $location
  * @property array $address
  * @property string $phone
+ * @property string|null $phone_alt
  * @property string $username
  * @property Carbon|null $delivery_date
  * @property string $delivery_type
@@ -462,7 +463,8 @@ class Order extends Model
                     $b
                         ->where('id', $search)
                         ->orWhere('user_id', $search)
-                        ->orWhere('phone', "%$search%")
+                        ->orWhere('phone', 'LIKE', "%$search%")
+                        ->orWhere('phone_alt', 'LIKE', "%$search%")
                         ->orWhere('username', "%$search%")
                         ->orWhere('note', 'LIKE', "%$search%")
                         ->orWhereHas('user', fn($q) => $this->search($q, $search));

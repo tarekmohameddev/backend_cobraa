@@ -19,6 +19,7 @@ class EasyOrdersTempOrderResource extends JsonResource
 			'failure_reason' => $this->failure_reason,
 			'customer_name' => $this->customer_name,
 			'customer_phone' => $this->customer_phone,
+			'customer_phone_alt' => $this->customer_phone_alt,
 			'government' => $this->government,
 			'address' => $this->address,
 			'payment_method' => $this->payment_method,

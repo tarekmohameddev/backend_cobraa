@@ -760,4 +760,25 @@ class OrderService extends CoreService
 
         return $order;
     }
+
+    /**
+     * Update only the alternative phone number on an order.
+     *
+     * @param int $orderId
+     * @param string|null $phoneAlt
+     * @return Order
+     * @throws Exception
+     */
+    public function phoneAltUpdate(int $orderId, ?string $phoneAlt): Order
+    {
+        $order = Order::find($orderId);
+
+        if (!$order) {
+            throw new Exception(__('errors.' . ResponseError::ORDER_NOT_FOUND, locale: $this->language));
+        }
+
+        $order->update(['phone_alt' => $phoneAlt]);
+
+        return $order;
+    }
 }

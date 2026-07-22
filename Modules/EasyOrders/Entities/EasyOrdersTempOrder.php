@@ -27,6 +27,7 @@ class EasyOrdersTempOrder extends Model
 		'expense',
 		'customer_name',
 		'customer_phone',
+		'customer_phone_alt',
 		'government',
 		'address',
 		'payment_method',

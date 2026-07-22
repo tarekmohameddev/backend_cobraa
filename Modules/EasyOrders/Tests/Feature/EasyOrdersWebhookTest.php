@@ -136,6 +136,63 @@ class EasyOrdersWebhookTest extends TestCase
 		$this->assertNotNull($log);
 		$this->assertSame('received', $log->processing_status);
 	}
+
+	public function test_webhook_captures_phone_alt(): void
+	{
+		config(['easyorders.auto_import_validated' => false]);
+
+		$store = EasyOrdersStore::query()->create([
+			'name' => 'Test',
+			'webhook_secret' => 'secret-token',
+			'api_key' => 'store-api-token',
+			'status' => 'active',
+		]);
+
+		$externalOrderId = 'ext-phone-alt';
+
+		Queue::fake();
+
+		Http::fake([
+			'https://api.easy-orders.net/api/v1/external-apps/orders/*' => Http::response([
+				'id' => $externalOrderId,
+				'store_id' => 'store-1',
+				'status' => 'pending',
+				'short_id' => 555,
+				'cart_items' => [],
+				'full_name' => 'Test User',
+				'phone' => '01000000000',
+				'phone_alt' => '01099999999',
+				'address' => 'Test Address',
+			], 200),
+		]);
+
+		$payload = [
+			'id' => $externalOrderId,
+			'store_id' => 'store-1',
+			'status' => 'pending',
+			'short_id' => 555,
+			'cart_items' => [],
+		];
+
+		$response = $this->withHeaders(['secret' => 'secret-token'])
+			->postJson('/api/v1/integrations/easyorders/webhook', $payload);
+		$response->assertStatus(200);
+
+		$webhookLogId = $response->json('webhook_log_id');
+		$log = EasyOrdersWebhookLog::query()->find((int) $webhookLogId);
+		$this->assertNotNull($log);
+
+		(new ProcessWebhookJob((int) $log->id))->handle(app(WebhookService::class));
+
+		/** @var EasyOrdersTempOrder $temp */
+		$temp = EasyOrdersTempOrder::query()->where('external_order_id', $externalOrderId)->first();
+		$this->assertNotNull($temp);
+		$this->assertSame('01000000000', $temp->customer_phone);
+		$this->assertSame('01099999999', $temp->customer_phone_alt);
+
+		// Verify phone_alt is in the normalized snapshot
+		$this->assertSame('01099999999', data_get($temp->normalized, 'customer.phone_alt'));
+	}
 }
 
 

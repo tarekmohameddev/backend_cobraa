@@ -172,6 +172,7 @@ class WebhookService
 			$temp->expense = $expense !== null ? (float) $expense : null;
 			$temp->customer_name = Arr::get($payload, 'full_name');
 			$temp->customer_phone = Arr::get($payload, 'phone');
+			$temp->customer_phone_alt = Arr::get($payload, 'phone_alt');
 			$temp->government = Arr::get($payload, 'government');
 			$temp->address = Arr::get($payload, 'address');
 			$temp->payment_method = Arr::get($payload, 'payment_method');
@@ -282,6 +283,7 @@ class WebhookService
 			'customer' => [
 				'full_name' => Arr::get($payload, 'full_name'),
 				'phone' => Arr::get($payload, 'phone'),
+				'phone_alt' => Arr::get($payload, 'phone_alt'),
 				'government' => Arr::get($payload, 'government'),
 				'address' => Arr::get($payload, 'address'),
 			],

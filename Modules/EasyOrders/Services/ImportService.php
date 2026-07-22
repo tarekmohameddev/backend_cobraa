@@ -55,6 +55,7 @@ class ImportService
 			// Ensure customer exists
 			$customerName = $temp->customer_name ?: data_get($normalized, 'customer.full_name');
 			$customerPhone = $temp->customer_phone ?: data_get($normalized, 'customer.phone');
+			$customerPhoneAlt = $temp->customer_phone_alt ?: data_get($normalized, 'customer.phone_alt');
 			/** @var User|null $user */
 			$user = null;
 			if ($customerPhone) {
@@ -169,10 +170,11 @@ class ImportService
 					'external_order_id' => $temp->external_order_id,
 					'short_id' => $temp->short_id,
 				],
-				// Customer and delivery details mapped into Order fields
-				'user_id' => $user?->id,
-				'phone' => (string) ($customerPhone ?: ''),
-				'username' => (string) ($customerName ?: ''),
+			// Customer and delivery details mapped into Order fields
+			'user_id' => $user?->id,
+			'phone' => (string) ($customerPhone ?: ''),
+			'phone_alt' => (string) ($customerPhoneAlt ?: ''),
+			'username' => (string) ($customerName ?: ''),
 				// Store address as flat JSON: {"address": "...", "country_id": ..., "city_id": ..., "area_id": ...}
 				'address' => $orderAddress,
 				'location' => [],

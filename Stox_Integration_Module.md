@@ -194,7 +194,8 @@ Steps:
    - Derive:
      - `customer_name`: from override, or `order.username` / user firstname.
      - `address`: from override or order address.
-     - `mobile_1`, `mobile_2`: from override / order / account settings.
+     - `mobile_1`: from override, then `order.phone`, then `order.user.phone`.
+     - `mobile_2`: from override, then `order.phone_alt`, then `account settings.mobile_2`.
      - `area_id`, `area_name`: from override or order address; defaults to simple fallback.
      - `email`.
      - `reference_number`: override or order id.
@@ -301,6 +302,13 @@ Stox’s validation is sensitive to:
 ---
 
 ### 7. Usage Notes / Gotchas
+
+- **Alternative phone (`phone_alt` / `mobile_2`)**:
+  - Orders carry a nullable `phone_alt` column (primary: `orders.phone`, secondary: `orders.phone_alt`).
+  - When exporting to Stox, `mobile_2` is populated automatically from `order.phone_alt` if set. No need to pass `override_data.mobile_2` manually for orders that have an alt phone.
+  - Priority: `override_data.mobile_2` > `order.phone_alt` > `account settings.mobile_2`.
+  - For EasyOrders-imported orders, `phone_alt` is extracted directly from the EasyOrders webhook `phone_alt` field and stored on both the temp order and the imported internal order.
+  - To update the alt phone on an order: `POST /api/v1/dashboard/admin/order/{id}/phone-alt` with `{"phone_alt": "..."}` (pass `null` or omit the key to clear it).
 
 - **Bearer token**:
   - Must be saved as a **plain** Stox token via the admin API; the model encrypts it.

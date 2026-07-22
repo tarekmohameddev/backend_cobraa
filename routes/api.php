@@ -802,6 +802,7 @@ Route::group(['prefix' => 'v1', 'middleware' => ['block.ip']], function () {
             Route::get('user-orders/{id}',               [Admin\OrderController::class, 'userOrder']);
             Route::get('user-orders/{id}/paginate',      [Admin\OrderController::class, 'userOrders']);
             Route::post('order/{id}/tracking',          [Admin\OrderController::class, 'orderTrackingUpdate']);
+            Route::post('order/{id}/phone-alt',         [Admin\OrderController::class, 'orderPhoneAltUpdate']);
 
             /* Parcel Orders */
             Route::get('parcel-order/export',            [Admin\ParcelOrderController::class, 'fileExport']);

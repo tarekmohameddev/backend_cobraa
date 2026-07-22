@@ -192,7 +192,7 @@ class StoxOrderExportService
             'customer_name' => Arr::get($overrideData, 'customer_name', $order->username ?? $order->user?->firstname),
             'address' => $rawAddress,
             'mobile_1' => Arr::get($overrideData, 'mobile_1', $order->phone ?? $order->user?->phone),
-            'mobile_2' => Arr::get($overrideData, 'mobile_2', Arr::get($settings, 'mobile_2')),
+            'mobile_2' => Arr::get($overrideData, 'mobile_2', $order->phone_alt ?: Arr::get($settings, 'mobile_2')),
             'area_id' => $areaId,
             'area_name' => $areaName,
             'email' => Arr::get($overrideData, 'email', $order->user?->email),

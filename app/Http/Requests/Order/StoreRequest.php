@@ -31,6 +31,7 @@ class StoreRequest extends BaseRequest
             'location.longitude'            => 'numeric',
             'address'                       => 'array',
             'phone'                         => 'string',
+            'phone_alt'                     => 'nullable|string|max:64',
             'username'                      => 'string',
             'delivery_date'                 => 'date|date_format:Y-m-d H:i',
             'cart_id'                       => 'integer|exists:carts,id',

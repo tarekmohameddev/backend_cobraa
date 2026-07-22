@@ -7,6 +7,7 @@ use App\Exports\OrderExport;
 use App\Helpers\ResponseError;
 use App\Http\Requests\FilterParamsRequest;
 use App\Http\Requests\Order\DeliveryManUpdateRequest;
+use App\Http\Requests\Order\OrderPhoneAltUpdateRequest;
 use App\Http\Requests\Order\OrderTrackingUpdateRequest;
 use App\Http\Requests\Order\StatusUpdateRequest;
 use App\Http\Requests\Order\StoreRequest;
@@ -263,6 +264,34 @@ class OrderController extends AdminBaseController
     {
         try {
             $result = $this->service->trackingUpdate($orderId, $request->validated());
+        } catch (Throwable $e) {
+            return $this->onErrorResponse([
+                'code'    => ResponseError::ERROR_400,
+                'message' => $e->getMessage()
+            ]);
+        }
+
+        if (!Cache::get('rjkcvd.ewoidfh') || data_get(Cache::get('rjkcvd.ewoidfh'), 'active') != 1) {
+            abort(403);
+        }
+
+        return $this->successResponse(
+            __('errors.' . ResponseError::NO_ERROR),
+            OrderResource::make($result),
+        );
+    }
+
+    /**
+     * Update the alternative phone number for an order.
+     *
+     * @param int $orderId
+     * @param OrderPhoneAltUpdateRequest $request
+     * @return JsonResponse
+     */
+    public function orderPhoneAltUpdate(int $orderId, OrderPhoneAltUpdateRequest $request): JsonResponse
+    {
+        try {
+            $result = $this->service->phoneAltUpdate($orderId, $request->input('phone_alt'));
         } catch (Throwable $e) {
             return $this->onErrorResponse([
                 'code'    => ResponseError::ERROR_400,
