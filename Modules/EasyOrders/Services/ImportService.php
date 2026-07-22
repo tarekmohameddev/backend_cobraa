@@ -265,6 +265,13 @@ class ImportService
 					}
 				}
 
+				// Apply price discount: when EasyOrders external prices total less than the
+				// sum of internal catalog prices, apply the difference as an order discount.
+				// This handles both combo splits and regular items with price mismatches.
+				if (!empty($orderModels)) {
+					$this->calculateExternalPriceDiscount($items, $orderModels);
+				}
+
 				// Attach a default delivery_price_id for each imported order when possible.
 				// We reuse the same default city/area that were used for address creation,
 				// so EasyOrders imports always have a valid delivery pricing configuration.
@@ -389,6 +396,129 @@ class ImportService
 				$temp->save();
 			}
 		});
+	}
+
+	/**
+	 * Reconcile catalog prices against EasyOrders external prices.
+	 *
+	 * After order creation the internal catalog prices are already committed.  When the
+	 * sum of those catalog prices exceeds the total the customer paid on EasyOrders we
+	 * apply the difference as an order-level discount (identical mechanism to coupon
+	 * discount application above), so the order total matches the EasyOrders amount.
+	 *
+	 * This is intentionally general: it applies to regular items *and* to split
+	 * composite SKUs — any item that carried an external price on the EasyOrders side.
+	 *
+	 * @param array        $items       Normalized items from the temp-order snapshot.
+	 * @param OrderModel[] $orderModels Created order models (already fresh() after prior patches).
+	 */
+	private function calculateExternalPriceDiscount(array $items, array &$orderModels): void
+	{
+		$externalTotal = $this->sumExternalPrices($items);
+
+		if ($externalTotal === null || $externalTotal <= 0) {
+			return;
+		}
+
+		// Sum the catalog-price totals from the actual order-detail rows.
+		$importedTotal = 0.0;
+		foreach ($orderModels as $order) {
+			$order->loadMissing('orderDetails');
+			$importedTotal += (float) $order->orderDetails->sum('total_price');
+		}
+
+		$priceDiscount = round($importedTotal - $externalTotal, 2);
+
+		if ($priceDiscount <= 0) {
+			return;
+		}
+
+		$this->applyPriceDiscount($orderModels, $priceDiscount);
+	}
+
+	/**
+	 * Sum the EasyOrders external line totals from normalized items.
+	 *
+	 * For regular items: adds `resolved.price_policy.external_line_total`.
+	 * For combo split items: adds `resolved.price_policy.combo_external_total` once per
+	 *   combo group (to avoid counting the same original line total multiple times).
+	 *
+	 * Returns null when no external price data is present at all (so the caller can
+	 * skip discount application rather than applying a zero discount).
+	 */
+	private function sumExternalPrices(array $items): ?float
+	{
+		$total                = 0.0;
+		$processedComboGroups = [];
+		$hasAnyExternalPrice  = false;
+
+		foreach ($items as $item) {
+			$comboGroupId = data_get($item, 'resolved.price_policy.combo_group_id');
+
+			if ($comboGroupId !== null) {
+				// Combo split part — count the original combo total exactly once.
+				if (!in_array($comboGroupId, $processedComboGroups, true)) {
+					$comboTotal = data_get($item, 'resolved.price_policy.combo_external_total');
+					if ($comboTotal !== null) {
+						$total               += (float) $comboTotal;
+						$hasAnyExternalPrice  = true;
+					}
+					$processedComboGroups[] = $comboGroupId;
+				}
+			} else {
+				// Regular (non-split) item.
+				$lineTotal = data_get($item, 'resolved.price_policy.external_line_total');
+				if ($lineTotal !== null) {
+					$total               += (float) $lineTotal;
+					$hasAnyExternalPrice  = true;
+				}
+			}
+		}
+
+		return $hasAnyExternalPrice ? $total : null;
+	}
+
+	/**
+	 * Distribute a price discount across one or more orders proportionally by total_price.
+	 *
+	 * Uses the same last-item remainder logic as the coupon discount block above to
+	 * avoid floating-point drift across multiple orders.
+	 *
+	 * @param OrderModel[] $orderModels Passed by reference so callers get refreshed models.
+	 */
+	private function applyPriceDiscount(array &$orderModels, float $discount): void
+	{
+		$sumTotal = collect($orderModels)->sum(fn (OrderModel $o) => (float) $o->total_price);
+
+		if ($sumTotal <= 0) {
+			return;
+		}
+
+		$remaining = min($discount, $sumTotal);
+		$applied   = 0.0;
+
+		foreach ($orderModels as $idx => $order) {
+			$isLast = $idx === (count($orderModels) - 1);
+
+			if ($isLast) {
+				$portion = round($remaining - $applied, 2);
+			} else {
+				$ratio   = $order->total_price / $sumTotal;
+				$portion = round($remaining * $ratio, 2);
+				$applied += $portion;
+			}
+
+			if ($portion <= 0) {
+				continue;
+			}
+
+			$order->update([
+				'total_price'    => max(0, (float) $order->total_price - $portion),
+				'total_discount' => (float) ($order->total_discount ?? 0) + $portion,
+			]);
+
+			$orderModels[$idx] = $order->fresh();
+		}
 	}
 
 	/**

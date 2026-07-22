@@ -337,10 +337,19 @@ class WebhookService
 			$product = Arr::get($item, 'product', []);
 			$variant = Arr::get($item, 'variant', []);
 
+			$itemPrice    = Arr::get($item, 'price');
+			$itemQuantity = (int) Arr::get($item, 'quantity', 1);
+
+			// Preserve the EasyOrders line total (price × qty) for all items so that
+			// ImportService can later reconcile catalog prices against what the customer paid.
+			$externalLineTotal = $itemPrice !== null
+				? round((float) $itemPrice * $itemQuantity, 2)
+				: null;
+
 			$base = [
 				'external_item_id' => Arr::get($item, 'id'),
-				'price' => Arr::get($item, 'price'),
-				'quantity' => Arr::get($item, 'quantity'),
+				'price' => $itemPrice,
+				'quantity' => $itemQuantity,
 				'product' => [
 					'external_id' => Arr::get($product, 'id'),
 					'name' => Arr::get($product, 'name'),
@@ -358,9 +367,10 @@ class WebhookService
 					'internal_product_id' => null,
 					'internal_variant_id' => null,
 					'price_policy' => [
-						'external_price' => Arr::get($item, 'price'),
-						'internal_price' => null,
-						'mismatch' => false,
+						'external_price'      => $itemPrice,
+						'external_line_total' => $externalLineTotal,
+						'internal_price'      => null,
+						'mismatch'            => false,
 					],
 				],
 			];
@@ -376,6 +386,10 @@ class WebhookService
 					$normalizedItems[] = $base;
 					continue;
 				}
+
+				// Group all split parts under a shared ID so ImportService can look up the
+				// original combo price exactly once per group (avoiding double-counting).
+				$comboGroupId = uniqid('combo_', true);
 
 				$index = 1;
 				foreach ($parts as $part) {
@@ -394,7 +408,11 @@ class WebhookService
 
 					// For composite SKUs, ignore external per-item price and rely on internal catalog prices.
 					$splitItem['price'] = null;
-					$splitItem['resolved']['price_policy']['external_price'] = null;
+					$splitItem['resolved']['price_policy']['external_price']        = null;
+					$splitItem['resolved']['price_policy']['external_line_total']   = null;
+					// Store the original combo price once per group so ImportService can compute discount.
+					$splitItem['resolved']['price_policy']['combo_group_id']        = $comboGroupId;
+					$splitItem['resolved']['price_policy']['combo_external_total']  = $externalLineTotal;
 
 					$normalizedItems[] = $splitItem;
 					$index++;
