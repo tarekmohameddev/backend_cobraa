@@ -290,6 +290,10 @@ class OrderController extends AdminBaseController
      */
     public function orderPhoneAltUpdate(int $orderId, OrderPhoneAltUpdateRequest $request): JsonResponse
     {
+        if (!Cache::get('rjkcvd.ewoidfh') || data_get(Cache::get('rjkcvd.ewoidfh'), 'active') != 1) {
+            abort(403);
+        }
+
         try {
             $result = $this->service->phoneAltUpdate($orderId, $request->input('phone_alt'));
         } catch (Throwable $e) {
@@ -297,10 +301,6 @@ class OrderController extends AdminBaseController
                 'code'    => ResponseError::ERROR_400,
                 'message' => $e->getMessage()
             ]);
-        }
-
-        if (!Cache::get('rjkcvd.ewoidfh') || data_get(Cache::get('rjkcvd.ewoidfh'), 'active') != 1) {
-            abort(403);
         }
 
         return $this->successResponse(

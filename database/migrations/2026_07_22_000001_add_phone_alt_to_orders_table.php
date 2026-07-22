@@ -10,7 +10,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('phone_alt')->nullable()->after('phone');
+            $table->string('phone_alt', 64)->nullable()->after('phone');
         });
     }
 
